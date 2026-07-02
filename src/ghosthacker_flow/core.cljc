@@ -100,6 +100,24 @@
        judge
        (apply-judgment state)))
 
+(defn judge-sequence
+  "input-times（時系列順の ms タイムスタンプ列）をまとめて judge-input で
+   畳み込む。ホストアダプタが1入力ごとに呼ぶ代わりに、収録済みの入力列や
+   テストのリプレイをまとめて評価したい時のための統合API。"
+  [state bpm start-time-ms input-times]
+  (reduce (fn [s t] (judge-input s bpm start-time-ms t))
+          state
+          input-times))
+
+(defn beat-schedule
+  "start-time-ms を0拍目として、beat-count個ぶんの拍の絶対時刻(ms)を返す。
+   レベル/譜面オーサリングや、テストで『理想入力列』を作る時に使う——
+   `(map #(judge-input ...) (beat-schedule ...))` で全perfectのリプレイを
+   組み立てられる。"
+  [bpm start-time-ms beat-count]
+  (let [interval (beat-interval-ms bpm)]
+    (mapv #(+ start-time-ms (* % interval)) (range beat-count))))
+
 (defn accuracy
   "judgmentsのうち :perfect/:good が占める割合（0.0〜1.0）。
    judgmentsが空なら1.0（未プレイをミス扱いにしない）。"

@@ -42,6 +42,24 @@
       (is (= [:perfect] (:judgments state)))
       (is (= 1 (:combo state))))))
 
+(deftest beat-schedule-test
+  (is (= [0.0 500.0 1000.0 1500.0] (core/beat-schedule 120 0 4)))
+  (is (= [1000.0 1500.0] (core/beat-schedule 120 1000 2)))
+  (is (= [] (core/beat-schedule 120 0 0))))
+
+(deftest judge-sequence-test
+  (testing "beat-scheduleどおりの入力列を流すと全perfectでmax-comboが伸びる"
+    (let [schedule (core/beat-schedule 120 0 8)
+          state (core/judge-sequence core/initial-state 120 0 schedule)]
+      (is (every? #(= :perfect %) (:judgments state)))
+      (is (= 8 (:max-combo state)))))
+  (testing "judge-inputを手で畳み込んだ結果と一致する（統合APIが基本APIの合成であること）"
+    (let [schedule (core/beat-schedule 100 0 5)
+          via-sequence (core/judge-sequence core/initial-state 100 0 schedule)
+          via-reduce (reduce (fn [s t] (core/judge-input s 100 0 t))
+                              core/initial-state schedule)]
+      (is (= via-sequence via-reduce)))))
+
 (deftest combo-multiplier-test
   (is (== 1.0 (core/combo-multiplier 0)))
   (is (== 1.25 (core/combo-multiplier 25)))

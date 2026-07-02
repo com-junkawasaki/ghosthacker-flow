@@ -23,7 +23,7 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 ## 現在の実装範囲
 
 `src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
-（`test/` にテストあり、31 assertions）。レンダリング・入力・音声の各ホスト
+（`test/` にテストあり、37 assertions）。レンダリング・入力・音声の各ホスト
 アダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）は
 未実装。
 
@@ -35,6 +35,10 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 - accuracy / grade（`:sky-high` `:a` `:b` `:c` `:d`。accuracyとgrooveの両方が
   高い時だけ最高評価 `:sky-high` になる）
 - ホストアダプタのリザルト画面にそのまま渡せる `summary`
+- `beat-schedule`（譜面オーサリング/テスト用の理想入力列づくり）と、
+  入力列をまとめて評価する統合API `judge-sequence`
+
+変更履歴は [CHANGELOG.md](CHANGELOG.md)。
 
 `ghosthacker` 本体の `ghosthacker.resources`(pure) /
 `ghosthacker.import`(JVM host adapter) と同型のレイヤ分離方針を踏襲している。
