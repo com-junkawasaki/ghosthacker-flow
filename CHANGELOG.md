@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- CI（`.github/workflows/test.yml`）を追加。`main`へのpush/PRで
+  `clojure -M:test` を自動実行。これまでテストは手動実行のみだった。
+
+## 714b8da → 5aa4c34
+
 - `beat-interval-ms` に `bpm<=0` の境界ガード（`{:pre [(pos? bpm)]}`）。
   唯一の入口で弾くことで、全bpm系関数がNaN/Infinityの無音伝播から守られる。
 

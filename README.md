@@ -1,5 +1,7 @@
 # GHOST HACKER: FLOW
 
+![test](https://github.com/com-junkawasaki/ghosthacker-flow/actions/workflows/test.yml/badge.svg)
+
 Ghost Hacker ゲームポートフォリオ第1弾。設計は
 [ADR-2607023200](../../../90-docs/adr/2607023200-ghosthacker-game-portfolio-flow.md)
 （superproject `com-junkawasaki/root`）を参照。
@@ -64,6 +66,8 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 ```bash
 clojure -M:test
 ```
+
+`main`へのpush/PRで `.github/workflows/test.yml` が自動でテストを実行する。
 
 `src/ghosthacker_flow/demo.clj`（JVM専用、host adapterではない）で、
 上記APIを一通り動かして結果を標準出力に表示できる。`:groove`
