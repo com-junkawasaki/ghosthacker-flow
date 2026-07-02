@@ -41,3 +41,68 @@
     (let [state (core/judge-input core/initial-state 120 0 5)]
       (is (= [:perfect] (:judgments state)))
       (is (= 1 (:combo state))))))
+
+(deftest combo-multiplier-test
+  (is (== 1.0 (core/combo-multiplier 0)))
+  (is (== 1.25 (core/combo-multiplier 25)))
+  (testing "上限(50)で頭打ち、それ以上は増えない"
+    (is (== 1.5 (core/combo-multiplier 50)))
+    (is (== 1.5 (core/combo-multiplier 500)))))
+
+(deftest score-test
+  (testing "1回目のperfectはcombo倍率がまだ低い(combo=1 → x1.01)"
+    (let [state (core/apply-judgment core/initial-state :perfect)]
+      (is (= 1010 (:score state)))))
+  (testing "missはscoreを増やさない"
+    (let [state (-> core/initial-state
+                     (core/apply-judgment :perfect)
+                     (core/apply-judgment :miss))]
+      (is (= 1010 (:score state)))))
+  (testing "comboが伸びるほど同じperfectでも加点が増える"
+    (let [after-1 (core/apply-judgment core/initial-state :perfect)
+          after-60 (reduce (fn [s _] (core/apply-judgment s :perfect))
+                            core/initial-state (range 60))
+          gain-1 (:score after-1)
+          gain-60th (- (:score after-60)
+                       (:score (reduce (fn [s _] (core/apply-judgment s :perfect))
+                                       core/initial-state (range 59))))]
+      (is (> gain-60th gain-1)))))
+
+(deftest max-combo-test
+  (testing "max-comboはmiss後もリセットされず最高値を保持する"
+    (let [state (-> core/initial-state
+                     (core/apply-judgment :perfect)
+                     (core/apply-judgment :perfect)
+                     (core/apply-judgment :perfect)
+                     (core/apply-judgment :miss)
+                     (core/apply-judgment :perfect))]
+      (is (= 3 (:max-combo state)))
+      (is (= 1 (:combo state))))))
+
+(deftest accuracy-test
+  (is (== 1.0 (core/accuracy core/initial-state)))
+  (let [state (-> core/initial-state
+                   (core/apply-judgment :perfect)
+                   (core/apply-judgment :good)
+                   (core/apply-judgment :miss)
+                   (core/apply-judgment :miss))]
+    (is (== 0.5 (core/accuracy state)))))
+
+(deftest grade-test
+  (testing "全perfectでgroove/accuracyともに高ければ :sky-high"
+    (let [state (reduce (fn [s _] (core/apply-judgment s :perfect))
+                         core/initial-state (range 20))]
+      (is (= :sky-high (core/grade state)))))
+  (testing "全missなら :d"
+    (let [state (reduce (fn [s _] (core/apply-judgment s :miss))
+                         core/initial-state (range 5))]
+      (is (= :d (core/grade state))))))
+
+(deftest summary-test
+  (let [state (reduce (fn [s _] (core/apply-judgment s :perfect))
+                       core/initial-state (range 5))
+        result (core/summary state)]
+    (is (= #{:score :max-combo :accuracy :groove :grade :judgment-count}
+           (set (keys result))))
+    (is (= 5 (:judgment-count result)))
+    (is (= 5 (:max-combo result)))))

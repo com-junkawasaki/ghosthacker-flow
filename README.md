@@ -22,10 +22,19 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 
 ## 現在の実装範囲
 
-`src/ghosthacker_flow/core.cljc` に、ビート位相計算・判定・
-combo/groove状態遷移の **pure ロジックのみ** を実装済み（`test/` にテスト
-あり）。レンダリング・入力・音声の各ホストアダプタ（tech stack未確定。
-`kotoba-lang/kami-engine-sdk` 流用が候補）は未実装。
+`src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
+（`test/` にテストあり、31 assertions）。レンダリング・入力・音声の各ホスト
+アダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）は
+未実装。
+
+- ビート位相計算・タイミング判定（`beat-phase-ms` / `judge`）
+- combo / `:groove`（TENSE⇄Sky High crossfadeパラメータ）状態遷移
+  （`apply-judgment` / `judge-input`）
+- comboに応じて頭打ちで伸びるscore倍率（`combo-multiplier`。乗り続けるほど
+  得点効率が上がり、乗り続けること自体にscore面の動機づけを作る）
+- accuracy / grade（`:sky-high` `:a` `:b` `:c` `:d`。accuracyとgrooveの両方が
+  高い時だけ最高評価 `:sky-high` になる）
+- ホストアダプタのリザルト画面にそのまま渡せる `summary`
 
 `ghosthacker` 本体の `ghosthacker.resources`(pure) /
 `ghosthacker.import`(JVM host adapter) と同型のレイヤ分離方針を踏襲している。

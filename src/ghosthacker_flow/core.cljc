@@ -47,6 +47,8 @@
 
 (def initial-state
   {:combo 0
+   :max-combo 0
+   :score 0
    :groove 0.0 ; 0.0=TENSE, 1.0=Sky High。音楽crossfadeのミックスパラメータ
    :judgments []})
 
@@ -55,17 +57,40 @@
    :good 0.03
    :miss -0.15})
 
+(def ^:private base-score
+  {:perfect 1000
+   :good 400
+   :miss 0})
+
+(def ^:private max-combo-multiplier-bonus
+  "comboが伸びるほどscoreに乗る倍率の上限ボーナス（+50%でcap）。
+   グルーヴに乗り続けることを続ける動機づけをscore面でも作る。"
+  0.5)
+
+(def ^:private combo-multiplier-cap 50)
+
 (defn- clamp01 [x]
   (max 0.0 (min 1.0 x)))
 
+(defn combo-multiplier
+  "現在のcomboから score 倍率を返す（1.0〜1.5、comboが伸びるほど上がりcapで頭打ち）。"
+  [combo]
+  (+ 1.0 (* max-combo-multiplier-bonus
+             (/ (min combo combo-multiplier-cap) combo-multiplier-cap))))
+
 (defn apply-judgment
   "judgment を state に反映する。:miss は combo をリセットし groove を大きく
-   落とす。:perfect/:good は combo を伸ばし groove を Sky High 側へ寄せる。"
+   落とす。:perfect/:good は combo を伸ばし groove を Sky High 側へ寄せ、
+   comboに応じた倍率つきでscoreを加算する。"
   [state judgment]
-  (-> state
-      (update :judgments conj judgment)
-      (update :combo (fn [c] (if (= judgment :miss) 0 (inc c))))
-      (update :groove (fn [g] (clamp01 (+ g (get groove-delta judgment)))))))
+  (let [next-combo (if (= judgment :miss) 0 (inc (:combo state)))
+        gained (long (* (get base-score judgment) (combo-multiplier next-combo)))]
+    (-> state
+        (update :judgments conj judgment)
+        (assoc :combo next-combo)
+        (update :max-combo max next-combo)
+        (update :score + gained)
+        (update :groove (fn [g] (clamp01 (+ g (get groove-delta judgment))))))))
 
 (defn judge-input
   "bpm/start-time-ms で定義されたビートグリッドに対する input-time-ms の
@@ -74,3 +99,35 @@
   (->> (beat-phase-ms bpm start-time-ms input-time-ms)
        judge
        (apply-judgment state)))
+
+(defn accuracy
+  "judgmentsのうち :perfect/:good が占める割合（0.0〜1.0）。
+   judgmentsが空なら1.0（未プレイをミス扱いにしない）。"
+  [state]
+  (let [judgments (:judgments state)]
+    (if (empty? judgments)
+      1.0
+      (/ (count (remove #(= % :miss) judgments)) (double (count judgments))))))
+
+(defn grade
+  "accuracyとgrooveから最終評価を返す。:sky-high が最高評価
+   （高精度でTENSE→Sky Highへ転調しきった状態）。"
+  [state]
+  (let [acc (accuracy state)
+        g (:groove state)]
+    (cond
+      (and (>= acc 0.95) (>= g 0.8)) :sky-high
+      (>= acc 0.85) :a
+      (>= acc 0.7) :b
+      (>= acc 0.5) :c
+      :else :d)))
+
+(defn summary
+  "runの結果サマリ。ホストアダプタ側のリザルト画面にそのまま渡せる形。"
+  [state]
+  {:score (:score state)
+   :max-combo (:max-combo state)
+   :accuracy (accuracy state)
+   :groove (:groove state)
+   :grade (grade state)
+   :judgment-count (count (:judgments state))})
