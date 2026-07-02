@@ -23,7 +23,7 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 ## 現在の実装範囲
 
 `src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
-（`test/` にテストあり、83 assertions）。レンダリング・入力・音声の各ホスト
+（`test/` にテストあり、87 assertions）。レンダリング・入力・音声の各ホスト
 アダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）は
 未実装。
 
@@ -61,4 +61,11 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 
 ```bash
 clojure -M:test
+```
+
+`src/ghosthacker_flow/demo.clj`（JVM専用、host adapterではない）で、
+上記APIを一通り動かして結果を標準出力に表示できる:
+
+```bash
+clojure -M -m ghosthacker-flow.demo
 ```

@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- `demo.clj` / `demo-test.clj` — API一通りを標準出力で確認できるCLIデモと
+  そのスモークテスト（`clojure -M -m ghosthacker-flow.demo`）。
+
+## d96eef7 → 4235476
+
 - `judge-with-windows` / `difficulty-presets`（`:easy`/`:normal`/`:hard`）/
   `judge-input-difficulty` — 判定窓を難易度ごとに差し替え可能にした
   （`judge`は`judge-with-windows`の`:normal`相当ラッパーへリファクタ、
