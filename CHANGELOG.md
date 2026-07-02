@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- demo.clj に `:groove`（TENSE⇄Sky High）のASCIIタイムライン可視化を追加
+  （1拍1行、comboと一緒にバー表示）。
+
+## 4235476 → 1858038
+
 - `demo.clj` / `demo-test.clj` — API一通りを標準出力で確認できるCLIデモと
   そのスモークテスト（`clojure -M -m ghosthacker-flow.demo`）。
 

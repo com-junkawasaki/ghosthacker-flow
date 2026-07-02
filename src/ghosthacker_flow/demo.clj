@@ -18,6 +18,36 @@
                     (double (:groove result))
                     (name (:grade result)))))
 
+(def ^:private timeline-width 20)
+
+(defn- groove-bar
+  "grooveの0.0(TENSE)〜1.0(Sky High)をASCIIバーで可視化する。demo専用の
+   表示ヘルパーで、core側のデータには影響しない。"
+  [groove]
+  (let [filled (-> (* (double groove) timeline-width)
+                    Math/round
+                    (min timeline-width)
+                    (max 0))]
+    (str "[" (apply str (repeat filled \#)) (apply str (repeat (- timeline-width filled) \-)) "]")))
+
+(defn- print-groove-timeline
+  "input-timesを1件ずつ judge-input-once で適用しながら、判定ごとの
+   combo/grooveの推移を1行1拍で表示する。TENSE→Sky Highの転調が
+   『操作の結果として』動くという設計を、数値でなく目で追えるようにする。"
+  [label bpm start-time-ms input-times]
+  (println (format "-- %s --" label))
+  (loop [state core/initial-state
+         times (seq input-times)
+         beat-num 1]
+    (when times
+      (let [next-state (core/judge-input-once state bpm start-time-ms (first times))
+            judgment (last (:judgments next-state))]
+        (println (format "  beat%-3d %-8s combo=%-3d groove=%s %.2f"
+                          beat-num (name judgment) (:combo next-state)
+                          (groove-bar (:groove next-state))
+                          (double (:groove next-state))))
+        (recur next-state (next times) (inc beat-num))))))
+
 (defn -main [& _args]
   (let [bpm core/default-bpm
         beats 16
@@ -34,4 +64,7 @@
     (println "同じズレ(40ms遅れ)の難易度別判定:")
     (doseq [difficulty [:easy :normal :hard]]
       (let [state (core/judge-input-difficulty core/initial-state bpm 0 40 difficulty)]
-        (println (format "  %-8s -> %s" (name difficulty) (name (last (:judgments state)))))))))
+        (println (format "  %-8s -> %s" (name difficulty) (name (last (:judgments state)))))))
+    (println)
+    (print-groove-timeline "連打を混ぜたrunのgroove推移(TENSE⇄Sky High)"
+                            bpm 0 (into schedule [10.0 20.0]))))
