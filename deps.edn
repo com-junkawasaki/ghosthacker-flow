@@ -1,0 +1,12 @@
+;; GHOST HACKER: FLOW — groove-sync core (ADR-2607023200).
+;; Pure .cljc judgment/state engine only. Rendering/input/audio host
+;; adapters are a separate, not-yet-decided layer (see README).
+{:paths ["src"]
+
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}}
+
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]}}}
