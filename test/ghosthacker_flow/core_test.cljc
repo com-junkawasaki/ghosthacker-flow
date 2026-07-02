@@ -15,6 +15,34 @@
   (is (= :good (core/judge 60)))
   (is (= :miss (core/judge 120))))
 
+(deftest judge-with-windows-test
+  (is (= :perfect (core/judge-with-windows 40 45 110)))
+  (is (= :good (core/judge-with-windows 40 18 50)))
+  (is (= :miss (core/judge-with-windows 40 10 30)))
+  (testing "judgeはjudge-with-windowsの:normal相当のラッパー"
+    (is (= (core/judge 40) (core/judge-with-windows 40 core/perfect-window-ms core/good-window-ms)))))
+
+(deftest difficulty-presets-test
+  (is (= {:perfect-window-ms core/perfect-window-ms :good-window-ms core/good-window-ms}
+         (:normal core/difficulty-presets)))
+  (testing "easyはnormalより緩く、hardはnormalより厳しい"
+    (is (> (get-in core/difficulty-presets [:easy :perfect-window-ms])
+           (get-in core/difficulty-presets [:normal :perfect-window-ms])))
+    (is (< (get-in core/difficulty-presets [:hard :perfect-window-ms])
+           (get-in core/difficulty-presets [:normal :perfect-window-ms])))))
+
+(deftest judge-input-difficulty-test
+  (testing "同じズレでも難易度でperfect/good/missの境界が変わる(120bpm,40ms遅れ)"
+    (let [easy-state (core/judge-input-difficulty core/initial-state 120 0 40 :easy)
+          normal-state (core/judge-input-difficulty core/initial-state 120 0 40 :normal)
+          hard-state (core/judge-input-difficulty core/initial-state 120 0 40 :hard)]
+      (is (= :perfect (last (:judgments easy-state))))
+      (is (= :good (last (:judgments normal-state))))
+      (is (= :good (last (:judgments hard-state))))))
+  (testing ":normalはjudge-inputと同じ結果になる"
+    (is (= (core/judge-input core/initial-state 120 0 40)
+           (core/judge-input-difficulty core/initial-state 120 0 40 :normal)))))
+
 (deftest groove-crossfade-test
   (testing "perfectを連続で当てるとgrooveがSky High側へ寄り、comboも伸びる"
     (let [state (reduce (fn [s _] (core/apply-judgment s :perfect))

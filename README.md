@@ -23,7 +23,7 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 ## 現在の実装範囲
 
 `src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
-（`test/` にテストあり、72 assertions）。レンダリング・入力・音声の各ホスト
+（`test/` にテストあり、83 assertions）。レンダリング・入力・音声の各ホスト
 アダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）は
 未実装。
 
@@ -48,6 +48,9 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 - `judge-run` / `play-run` — 期待される拍数(`beat-count`)と実際の入力を
   突き合わせ、入力が一度も届かなかった拍を明示的に`:miss`として積み増す。
   「押さなければmissにすらならない」を防ぐ、`play`の欠けを埋めるバリアント
+- `difficulty-presets`（`:easy`/`:normal`/`:hard`）と `judge-input-difficulty`
+  — 難易度ごとに判定窓(perfect/good)だけを差し替える。score/combo/groove
+  の計算式自体は難易度に依らず共通
 
 変更履歴は [CHANGELOG.md](CHANGELOG.md)。
 

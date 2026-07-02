@@ -6,6 +6,13 @@ API変遷の記録。
 
 ## Unreleased
 
+- `judge-with-windows` / `difficulty-presets`（`:easy`/`:normal`/`:hard`）/
+  `judge-input-difficulty` — 判定窓を難易度ごとに差し替え可能にした
+  （`judge`は`judge-with-windows`の`:normal`相当ラッパーへリファクタ、
+  外部動作は不変）。
+
+## 33f0d6a → d96eef7
+
 - `judge-run` / `play-run` — 期待される拍数と実入力を突き合わせ、入力ゼロの
   拍を明示的に`:miss`として積み増す（`play`だと押さなければmissにすら
   ならない、という穴の修正）。

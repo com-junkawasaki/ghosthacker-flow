@@ -36,14 +36,27 @@
 (defn- magnitude [x]
   (if (neg? x) (- x) x))
 
-(defn judge
-  "ズレ(ms、符号は問わない)から判定を返す。"
-  [delta-ms]
+(defn judge-with-windows
+  "ズレ(ms、符号は問わない)を、渡された perfect/good 判定窓(ms)で判定する。
+   judge/difficulty-presets はこれの薄いラッパー。"
+  [delta-ms perfect-window good-window]
   (let [abs-delta (magnitude (double delta-ms))]
     (cond
-      (<= abs-delta perfect-window-ms) :perfect
-      (<= abs-delta good-window-ms) :good
+      (<= abs-delta perfect-window) :perfect
+      (<= abs-delta good-window) :good
       :else :miss)))
+
+(defn judge
+  "ズレ(ms、符号は問わない)から判定を返す（:normal相当の既定窓）。"
+  [delta-ms]
+  (judge-with-windows delta-ms perfect-window-ms good-window-ms))
+
+(def difficulty-presets
+  "判定窓のプリセット。difficultyが変えるのは『どれだけタイミングに厳しいか』
+   だけで、score/combo/grooveの計算式自体は難易度に依らず共通。"
+  {:easy   {:perfect-window-ms 45 :good-window-ms 110}
+   :normal {:perfect-window-ms perfect-window-ms :good-window-ms good-window-ms}
+   :hard   {:perfect-window-ms 18 :good-window-ms 50}})
 
 (defn judgment-direction
   "beat-phase-msの符号から早入力/遅入力/ジャストを返す。
@@ -116,6 +129,15 @@
   (->> (beat-phase-ms bpm start-time-ms input-time-ms)
        judge
        (apply-judgment state)))
+
+(defn judge-input-difficulty
+  "judge-inputの難易度対応版。difficultyはdifficulty-presetsのキー
+   (:easy/:normal/:hard)。判定窓が変わるだけで、score/combo/grooveへの
+   反映(apply-judgment)はjudge-inputと同じ。"
+  [state bpm start-time-ms input-time-ms difficulty]
+  (let [{:keys [perfect-window-ms good-window-ms]} (get difficulty-presets difficulty)
+        delta (beat-phase-ms bpm start-time-ms input-time-ms)]
+    (apply-judgment state (judge-with-windows delta perfect-window-ms good-window-ms))))
 
 (defn judge-sequence
   "input-times（時系列順の ms タイムスタンプ列）をまとめて judge-input で
