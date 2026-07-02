@@ -50,7 +50,8 @@
    :max-combo 0
    :score 0
    :groove 0.0 ; 0.0=TENSE, 1.0=Sky High。音楽crossfadeのミックスパラメータ
-   :judgments []})
+   :judgments []
+   :hit-beat-indices #{}}) ; judge-input-once の対マッシュガードが使う既成立拍の記録
 
 (def ^:private groove-delta
   {:perfect 0.08
@@ -106,6 +107,40 @@
    テストのリプレイをまとめて評価したい時のための統合API。"
   [state bpm start-time-ms input-times]
   (reduce (fn [s t] (judge-input s bpm start-time-ms t))
+          state
+          input-times))
+
+(defn- round-int
+  "host固有のMath関数を使わない四捨五入（0からの方向へ丸め）。"
+  [x]
+  (long (+ x (if (neg? x) -0.5 0.5))))
+
+(defn beat-index
+  "input-time-ms が属する最寄りの拍のインデックス(0始まり、負も許容)を返す。"
+  [bpm start-time-ms input-time-ms]
+  (let [interval (beat-interval-ms bpm)
+        elapsed (- input-time-ms start-time-ms)
+        phase (beat-phase-ms bpm start-time-ms input-time-ms)]
+    (round-int (/ (- elapsed phase) interval))))
+
+(defn judge-input-once
+  "judge-inputと同じ判定をするが、同じ拍(beat-index)への二重入力（連打での
+   スコア稼ぎ）を検出する。既に成立済みの拍への追加入力は、そのタイミング
+   精度に関わらず combo をリセットする :miss として扱う——マッシュ連打で
+   comboもscoreも稼げないようにするガード。"
+  [state bpm start-time-ms input-time-ms]
+  (let [idx (beat-index bpm start-time-ms input-time-ms)]
+    (if (contains? (:hit-beat-indices state) idx)
+      (apply-judgment state :miss)
+      (-> state
+          (judge-input bpm start-time-ms input-time-ms)
+          (update :hit-beat-indices conj idx)))))
+
+(defn judge-sequence-once
+  "input-timesをまとめてjudge-input-onceで畳み込む（judge-sequenceの
+   対マッシュガード版）。"
+  [state bpm start-time-ms input-times]
+  (reduce (fn [s t] (judge-input-once s bpm start-time-ms t))
           state
           input-times))
 

@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- `beat-index` / `judge-input-once` / `judge-sequence-once` — 同じ拍への
+  二重入力（連打でのスコア稼ぎ）を検出する対マッシュガード。
+
+## 77e5fa4 → 36936c6
+
 - `beat-schedule` — 拍の絶対時刻列を生成（譜面オーサリング/テスト用の理想入力列づくり）。
 - `judge-sequence` — 入力列をまとめて `judge-input` に畳み込む統合API。
 

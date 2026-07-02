@@ -124,3 +124,41 @@
            (set (keys result))))
     (is (= 5 (:judgment-count result)))
     (is (= 5 (:max-combo result)))))
+
+(deftest beat-index-test
+  (is (= 0 (core/beat-index 120 0 0)))
+  (is (= 1 (core/beat-index 120 0 500)))
+  (testing "拍間の入力は最寄りの拍のindexに丸められる"
+    (is (= 1 (core/beat-index 120 0 400)))
+    (is (= 0 (core/beat-index 120 0 100)))))
+
+(deftest judge-input-once-test
+  (testing "同じ拍への2回目の入力はタイミングに関わらずcomboをリセットするmiss扱い"
+    (let [state1 (core/judge-input-once core/initial-state 120 0 0)
+          state2 (core/judge-input-once state1 120 0 10)]
+      (is (= :perfect (last (:judgments state1))))
+      (is (= 1 (:combo state1)))
+      (is (= #{0} (:hit-beat-indices state1)))
+      (is (= :miss (last (:judgments state2))))
+      (is (zero? (:combo state2)))))
+  (testing "次の拍への入力は通常通りcomboが伸びる"
+    (let [state (-> core/initial-state
+                     (core/judge-input-once 120 0 0)
+                     (core/judge-input-once 120 0 10) ; 連打(同じ拍) → miss
+                     (core/judge-input-once 120 0 500)) ; 次の拍 → perfect
+          ]
+      (is (= [:perfect :miss :perfect] (:judgments state)))
+      (is (= 1 (:combo state)))
+      (is (= #{0 1} (:hit-beat-indices state))))))
+
+(deftest judge-sequence-once-test
+  (testing "beat-scheduleどおりの入力なら連打ガードに引っかからず全perfect"
+    (let [schedule (core/beat-schedule 120 0 6)
+          state (core/judge-sequence-once core/initial-state 120 0 schedule)]
+      (is (every? #(= :perfect %) (:judgments state)))
+      (is (= 6 (:max-combo state)))))
+  (testing "同じ拍に対する連打を混ぜるとその分だけmissになる"
+    (let [schedule (core/beat-schedule 120 0 3) ; [0.0 500.0 1000.0]
+          mashed (into schedule [10.0 20.0])    ; 拍0への連打を2回追加
+          state (core/judge-sequence-once core/initial-state 120 0 mashed)]
+      (is (= [:perfect :perfect :perfect :miss :miss] (:judgments state))))))
