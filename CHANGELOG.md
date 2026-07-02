@@ -6,6 +6,13 @@ API変遷の記録。
 
 ## Unreleased
 
+- コードレビュー: `beat-phase-ms`の負のmod分岐がdead codeだったのを除去
+  （Clojureの`mod`はfloored divisionで、interval>0(常に保証)なら結果は
+  常に非負——Javaの`%`のような負の余りにはならない）。挙動は不変（全テスト
+  green）で、負のelapsedを明示的にテストするケースを追加した。
+
+## 5aa4c34 → f522a3f
+
 - CI（`.github/workflows/test.yml`）を追加。`main`へのpush/PRで
   `clojure -M:test` を自動実行。これまでテストは手動実行のみだった。
 

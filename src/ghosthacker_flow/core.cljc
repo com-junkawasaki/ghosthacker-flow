@@ -37,8 +37,9 @@
   [bpm start-time-ms input-time-ms]
   (let [interval (beat-interval-ms bpm)
         elapsed (- input-time-ms start-time-ms)
-        phase (mod elapsed interval)
-        phase (if (neg? phase) (+ phase interval) phase)]
+        ;; Clojureのmodはfloored divisionなので、interval(>0が保証済み)に対し
+        ;; 常に[0, interval)を返す(Javaの%のような負の余りにはならない)。
+        phase (mod elapsed interval)]
     (if (> phase (/ interval 2))
       (- phase interval)
       phase)))

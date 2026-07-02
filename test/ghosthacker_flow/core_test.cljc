@@ -7,7 +7,12 @@
     (is (== 0.0 (core/beat-phase-ms 120 0 0)))
     (is (== 0.0 (core/beat-phase-ms 120 0 500))))
   (testing "次の拍寄りの入力は負のズレに正規化される"
-    (is (== -100.0 (core/beat-phase-ms 120 0 400)))))
+    (is (== -100.0 (core/beat-phase-ms 120 0 400))))
+  (testing "start-time-msより前(elapsedが負)の入力も正しく正規化される
+            (Clojureのmodはfloored divisionでinterval>0なら常に非負を返す
+            ため、この分岐に負のelapsedを渡しても正しく動く必要がある)"
+    (is (== -100.0 (core/beat-phase-ms 120 0 -100)))
+    (is (== 0.0 (core/beat-phase-ms 120 0 -500)))))
 
 (deftest beat-interval-ms-guard-test
   (testing "bpm<=0は無音でNaN/Infinityを生まず例外で弾く（ホスト側の曲設定バグを早期発見）"
