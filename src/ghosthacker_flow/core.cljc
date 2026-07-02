@@ -45,6 +45,22 @@
       (<= abs-delta good-window-ms) :good
       :else :miss)))
 
+(defn judgment-direction
+  "beat-phase-msの符号から早入力/遅入力/ジャストを返す。
+   正=拍より後（遅い）、負=拍より前（早い）というbeat-phase-msの規約に対応。"
+  [delta-ms]
+  (cond
+    (pos? delta-ms) :late
+    (neg? delta-ms) :early
+    :else :exact))
+
+(defn judge-detailed
+  "judgeと同じ判定に、早い/遅い/ジャストの方向を添えて返す。ホストアダプタ側の
+   『はやい!/おそい!』のようなタイミングフィードバック表示に使う想定。"
+  [delta-ms]
+  {:judgment (judge delta-ms)
+   :direction (judgment-direction delta-ms)})
+
 (def initial-state
   {:combo 0
    :max-combo 0
@@ -184,3 +200,12 @@
    :groove (:groove state)
    :grade (grade state)
    :judgment-count (count (:judgments state))})
+
+(defn play
+  "initial-stateから始めてinput-timesをjudge-sequence-once(対マッシュガード
+   つき)で評価し、summaryだけを返す。ホストアダプタが1run分の入力を録り
+   終えた後に呼ぶ最短経路。"
+  [bpm start-time-ms input-times]
+  (-> initial-state
+      (judge-sequence-once bpm start-time-ms input-times)
+      summary))

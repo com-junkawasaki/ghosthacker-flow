@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- `judge-detailed` — `:early` / `:late` / `:exact` を添えたタイミング判定。
+- `play` — 入力列1本を対マッシュガードつきで評価してsummaryだけ返す最短経路。
+
+## 36936c6 → 4552d9d
+
 - `beat-index` / `judge-input-once` / `judge-sequence-once` — 同じ拍への
   二重入力（連打でのスコア稼ぎ）を検出する対マッシュガード。
 

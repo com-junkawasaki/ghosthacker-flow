@@ -162,3 +162,26 @@
           mashed (into schedule [10.0 20.0])    ; 拍0への連打を2回追加
           state (core/judge-sequence-once core/initial-state 120 0 mashed)]
       (is (= [:perfect :perfect :perfect :miss :miss] (:judgments state))))))
+
+(deftest judgment-direction-test
+  (is (= :late (core/judgment-direction 10)))
+  (is (= :early (core/judgment-direction -10)))
+  (is (= :exact (core/judgment-direction 0))))
+
+(deftest judge-detailed-test
+  (is (= {:judgment :perfect :direction :exact} (core/judge-detailed 0)))
+  (is (= {:judgment :good :direction :late} (core/judge-detailed 60)))
+  (is (= {:judgment :miss :direction :early} (core/judge-detailed -120))))
+
+(deftest play-test
+  (testing "beat-scheduleどおりに入力すればgradeは最高評価"
+    (let [schedule (core/beat-schedule 120 0 20)
+          result (core/play 120 0 schedule)]
+      (is (= :sky-high (:grade result)))
+      (is (== 1.0 (:accuracy result)))
+      (is (= 20 (:max-combo result)))))
+  (testing "連打を混ぜるとaccuracyが落ちる（対マッシュガードがplay経由でも効く）"
+    (let [schedule (core/beat-schedule 120 0 3)
+          mashed (into schedule [10.0])
+          result (core/play 120 0 mashed)]
+      (is (< (:accuracy result) 1.0)))))
