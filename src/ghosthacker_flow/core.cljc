@@ -15,10 +15,20 @@
   "FreeTEMPO寄りの温かい四つ打ちハウスのグルーヴ帯。"
   124)
 
-(def perfect-window-ms 30)
-(def good-window-ms 80)
+(def perfect-window-ms
+  "既定(:normal)のperfect判定窓(ms)。difficulty-presetsも参照。"
+  30)
+(def good-window-ms
+  "既定(:normal)のgood判定窓(ms)。difficulty-presetsも参照。"
+  80)
 
-(defn beat-interval-ms [bpm]
+(defn beat-interval-ms
+  "1拍の長さ(ms)。bpmはビートグリッド全体の唯一の入口——ここで弾いておけば
+   bpm<=0(0除算/負のinterval)がbeat-phase-ms以下に無音で伝播して
+   NaN/Infinityを撒き散らすのを防げる。bpmはホスト側の曲/レベル設定由来の
+   値なので、境界での検証として妥当。"
+  [bpm]
+  {:pre [(pos? bpm)]}
   (/ 60000.0 bpm))
 
 (defn beat-phase-ms

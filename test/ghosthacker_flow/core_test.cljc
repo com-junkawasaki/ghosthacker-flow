@@ -9,6 +9,15 @@
   (testing "次の拍寄りの入力は負のズレに正規化される"
     (is (== -100.0 (core/beat-phase-ms 120 0 400)))))
 
+(deftest beat-interval-ms-guard-test
+  (testing "bpm<=0は無音でNaN/Infinityを生まず例外で弾く（ホスト側の曲設定バグを早期発見）"
+    (is (thrown? #?(:clj AssertionError :cljs js/Error) (core/beat-interval-ms 0)))
+    (is (thrown? #?(:clj AssertionError :cljs js/Error) (core/beat-interval-ms -10)))
+    (is (thrown? #?(:clj AssertionError :cljs js/Error) (core/beat-phase-ms 0 0 0)))
+    (is (thrown? #?(:clj AssertionError :cljs js/Error) (core/beat-schedule -60 0 4))))
+  (testing "正のbpmはこれまで通り"
+    (is (== 500.0 (core/beat-interval-ms 120)))))
+
 (deftest judge-test
   (is (= :perfect (core/judge 10)))
   (is (= :perfect (core/judge -30)))

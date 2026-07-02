@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- `beat-interval-ms` に `bpm<=0` の境界ガード（`{:pre [(pos? bpm)]}`）。
+  唯一の入口で弾くことで、全bpm系関数がNaN/Infinityの無音伝播から守られる。
+
+## 1858038 → 714b8da
+
 - demo.clj に `:groove`（TENSE⇄Sky High）のASCIIタイムライン可視化を追加
   （1拍1行、comboと一緒にバー表示）。
 
