@@ -6,6 +6,12 @@ API変遷の記録。
 
 ## Unreleased
 
+- `judge-run` / `play-run` — 期待される拍数と実入力を突き合わせ、入力ゼロの
+  拍を明示的に`:miss`として積み増す（`play`だと押さなければmissにすら
+  ならない、という穴の修正）。
+
+## 4552d9d → 33f0d6a
+
 - `judge-detailed` — `:early` / `:late` / `:exact` を添えたタイミング判定。
 - `play` — 入力列1本を対マッシュガードつきで評価してsummaryだけ返す最短経路。
 

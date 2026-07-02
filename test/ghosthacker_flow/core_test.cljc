@@ -184,4 +184,34 @@
     (let [schedule (core/beat-schedule 120 0 3)
           mashed (into schedule [10.0])
           result (core/play 120 0 mashed)]
-      (is (< (:accuracy result) 1.0)))))
+      (is (< (:accuracy result) 1.0))))
+  (testing "何も入力しなければplayは『未プレイ』としてaccuracy=1.0のまま
+            （judge-runとの違い。空振りを検出したいならjudge-run/play-runを使う）"
+    (is (== 1.0 (:accuracy (core/play 120 0 []))))))
+
+(deftest judge-run-test
+  (testing "期待される拍をすべて入力すれば、空振りによる追加missは無い"
+    (let [schedule (core/beat-schedule 120 0 5)
+          state (core/judge-run 120 0 5 schedule)]
+      (is (= 5 (count (:judgments state))))
+      (is (every? #(= :perfect %) (:judgments state)))))
+  (testing "一部の拍にしか入力しないと、空振りぶんだけ:missが積み増される"
+    (let [schedule (core/beat-schedule 120 0 5)
+          partial-input (subvec schedule 0 3) ; 先頭3拍だけ入力
+          state (core/judge-run 120 0 5 partial-input)]
+      (is (= 5 (count (:judgments state))))
+      (is (= [:perfect :perfect :perfect :miss :miss] (:judgments state)))))
+  (testing "全く入力しなければbeat-count分すべて:miss"
+    (let [state (core/judge-run 120 0 4 [])]
+      (is (= [:miss :miss :miss :miss] (:judgments state)))
+      (is (zero? (:score state))))))
+
+(deftest play-run-test
+  (testing "何も入力しなければ、playと違ってaccuracyは0.0（空振りが正しくmiss計上される）"
+    (let [result (core/play-run 120 0 4 [])]
+      (is (== 0.0 (:accuracy result)))
+      (is (= :d (:grade result)))))
+  (testing "全拍入力すればplayと同じ最高評価"
+    (let [schedule (core/beat-schedule 120 0 20)]
+      (is (= (core/play 120 0 schedule)
+             (core/play-run 120 0 20 schedule))))))

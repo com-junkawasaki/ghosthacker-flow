@@ -23,7 +23,7 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 ## 現在の実装範囲
 
 `src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
-（`test/` にテストあり、62 assertions）。レンダリング・入力・音声の各ホスト
+（`test/` にテストあり、72 assertions）。レンダリング・入力・音声の各ホスト
 アダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）は
 未実装。
 
@@ -43,6 +43,11 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 - `judge-detailed` — `:early` / `:late` / `:exact` を添えたタイミング判定
   （「はやい!/おそい!」表示向け）
 - `play` — 入力列1本を対マッシュガードつきで評価してsummaryだけ返す最短経路
+  （ただし『何拍流れるはずだったか』は知らないため、入力ゼロ=未プレイ扱いで
+  accuracy 1.0 になる）
+- `judge-run` / `play-run` — 期待される拍数(`beat-count`)と実際の入力を
+  突き合わせ、入力が一度も届かなかった拍を明示的に`:miss`として積み増す。
+  「押さなければmissにすらならない」を防ぐ、`play`の欠けを埋めるバリアント
 
 変更履歴は [CHANGELOG.md](CHANGELOG.md)。
 

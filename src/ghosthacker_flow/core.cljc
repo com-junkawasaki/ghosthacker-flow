@@ -204,8 +204,37 @@
 (defn play
   "initial-stateから始めてinput-timesをjudge-sequence-once(対マッシュガード
    つき)で評価し、summaryだけを返す。ホストアダプタが1run分の入力を録り
-   終えた後に呼ぶ最短経路。"
+   終えた後に呼ぶ最短経路。
+
+   注意: この関数は『入力されなかった拍』を知らない——input-timesに何も
+   無ければ judgments も空のままで、accuracy は(未プレイ扱いの)1.0になる。
+   曲全体で何拍流れるはずだったかが分かっている時は play ではなく
+   judge-run / play-run を使うこと（空振りした拍を明示的に:missにする）。"
   [bpm start-time-ms input-times]
   (-> initial-state
       (judge-sequence-once bpm start-time-ms input-times)
       summary))
+
+(defn judge-run
+  "beat-countぶんの『流れてくるはずの拍』と、実際のinput-times（対マッシュ
+   ガードつきで評価）を突き合わせる。playやjudge-sequence-onceは入力され
+   なかった拍を一切知らないため、黙って何も押さなければmissにすらならない
+   ——judge-runはinput-timesの評価後、hit-beat-indicesに含まれない拍
+   （タイミングに関わらず一度も入力が届かなかった拍）ぶんだけ明示的に
+   :missを積み増す。空振りを空振りとして数える。
+
+   簡略化: どの拍が具体的に空振りだったかは判定に使わず、空振りの『件数』
+   ぶんだけmissを末尾に追加する（score/combo/grooveへの影響は同じになる
+   ため、順序の厳密な再現までは行わない）。"
+  [bpm start-time-ms beat-count input-times]
+  (let [after-inputs (judge-sequence-once initial-state bpm start-time-ms input-times)
+        hit? (:hit-beat-indices after-inputs)
+        missed-count (count (remove hit? (range beat-count)))]
+    (reduce (fn [s _] (apply-judgment s :miss))
+            after-inputs
+            (range missed-count))))
+
+(defn play-run
+  "judge-runの結果をsummaryにして返す（playのbeat-count対応版）。"
+  [bpm start-time-ms beat-count input-times]
+  (summary (judge-run bpm start-time-ms beat-count input-times)))
