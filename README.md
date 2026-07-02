@@ -78,3 +78,7 @@ clojure -M:test
 ```bash
 clojure -M -m ghosthacker-flow.demo
 ```
+
+## ライセンス
+
+MIT License — [LICENSE](LICENSE) 参照。
