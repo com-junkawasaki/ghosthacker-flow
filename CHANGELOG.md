@@ -6,6 +6,11 @@ API変遷の記録。
 
 ## Unreleased
 
+- lint: `:lint`エイリアス（clj-kondoをClojars経由で取得、Homebrew等の
+  システムインストール不要）をCIにも追加。現状 errors: 0, warnings: 0。
+
+## 0696f04 → a0bc086
+
 - `judge-detailed-with-windows` / `judge-detailed-difficulty` —
   `judge-input-difficulty`と対称になるよう`judge-detailed`系にも判定窓
   パラメータ版/難易度対応版を追加（非対称だった箇所の解消）。

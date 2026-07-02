@@ -68,7 +68,13 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 clojure -M:test
 ```
 
-`main`へのpush/PRで `.github/workflows/test.yml` が自動でテストを実行する。
+Lint（clj-kondo、Clojars経由でHomebrew等の別インストール不要）:
+
+```bash
+clojure -M:lint
+```
+
+`main`へのpush/PRで `.github/workflows/test.yml` が自動でテスト+lintを実行する。
 
 `src/ghosthacker_flow/demo.clj`（JVM専用、host adapterではない）で、
 上記APIを一通り動かして結果を標準出力に表示できる。`:groove`

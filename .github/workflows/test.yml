@@ -24,3 +24,5 @@ jobs:
           restore-keys: cljdeps-
       - name: Run tests
         run: clojure -M:test
+      - name: Lint (clj-kondo)
+        run: clojure -M:lint
