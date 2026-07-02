@@ -78,12 +78,27 @@
     (neg? delta-ms) :early
     :else :exact))
 
-(defn judge-detailed
-  "judgeと同じ判定に、早い/遅い/ジャストの方向を添えて返す。ホストアダプタ側の
-   『はやい!/おそい!』のようなタイミングフィードバック表示に使う想定。"
-  [delta-ms]
-  {:judgment (judge delta-ms)
+(defn judge-detailed-with-windows
+  "judge-detailedの判定窓パラメータ版。judge-with-windowsとdifficulty-presets
+   を組み合わせれば、難易度ごとの『はやい!/おそい!』表示も作れる。"
+  [delta-ms perfect-window good-window]
+  {:judgment (judge-with-windows delta-ms perfect-window good-window)
    :direction (judgment-direction delta-ms)})
+
+(defn judge-detailed
+  "judgeと同じ判定に、早い/遅い/ジャストの方向を添えて返す（:normal相当の
+   既定窓）。ホストアダプタ側の『はやい!/おそい!』のようなタイミング
+   フィードバック表示に使う想定。"
+  [delta-ms]
+  (judge-detailed-with-windows delta-ms perfect-window-ms good-window-ms))
+
+(defn judge-detailed-difficulty
+  "judge-detailedの難易度対応版。difficultyはdifficulty-presetsのキー
+   (:easy/:normal/:hard)。judge-input-difficultyと対になる、判定窓だけ
+   難易度で差し替えるバリアント。"
+  [delta-ms difficulty]
+  (let [{:keys [perfect-window-ms good-window-ms]} (get difficulty-presets difficulty)]
+    (judge-detailed-with-windows delta-ms perfect-window-ms good-window-ms)))
 
 (def initial-state
   {:combo 0

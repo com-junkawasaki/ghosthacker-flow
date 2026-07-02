@@ -215,6 +215,21 @@
   (is (= {:judgment :good :direction :late} (core/judge-detailed 60)))
   (is (= {:judgment :miss :direction :early} (core/judge-detailed -120))))
 
+(deftest judge-detailed-with-windows-test
+  (is (= {:judgment :perfect :direction :late} (core/judge-detailed-with-windows 40 45 110)))
+  (is (= {:judgment :good :direction :late} (core/judge-detailed-with-windows 40 18 50)))
+  (testing "judge-detailedはjudge-detailed-with-windowsの:normal相当のラッパー"
+    (is (= (core/judge-detailed 40)
+           (core/judge-detailed-with-windows 40 core/perfect-window-ms core/good-window-ms)))))
+
+(deftest judge-detailed-difficulty-test
+  (testing "同じズレでも難易度で判定は変わるが、方向(早い/遅い)は変わらない"
+    (is (= {:judgment :perfect :direction :late} (core/judge-detailed-difficulty 40 :easy)))
+    (is (= {:judgment :good :direction :late} (core/judge-detailed-difficulty 40 :normal)))
+    (is (= {:judgment :good :direction :late} (core/judge-detailed-difficulty 40 :hard))))
+  (testing ":normalはjudge-detailedと同じ結果になる"
+    (is (= (core/judge-detailed 40) (core/judge-detailed-difficulty 40 :normal)))))
+
 (deftest play-test
   (testing "beat-scheduleどおりに入力すればgradeは最高評価"
     (let [schedule (core/beat-schedule 120 0 20)

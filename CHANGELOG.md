@@ -6,6 +6,12 @@ API変遷の記録。
 
 ## Unreleased
 
+- `judge-detailed-with-windows` / `judge-detailed-difficulty` —
+  `judge-input-difficulty`と対称になるよう`judge-detailed`系にも判定窓
+  パラメータ版/難易度対応版を追加（非対称だった箇所の解消）。
+
+## f522a3f → 51d288d
+
 - コードレビュー: `beat-phase-ms`の負のmod分岐がdead codeだったのを除去
   （Clojureの`mod`はfloored divisionで、interval>0(常に保証)なら結果は
   常に非負——Javaの`%`のような負の余りにはならない）。挙動は不変（全テスト
