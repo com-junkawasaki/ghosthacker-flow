@@ -49,7 +49,11 @@
                           (double (:groove next-state))))
         (recur next-state (next times) (inc beat-num))))))
 
-(defn -main [& _args]
+(defn -main
+  "Runs a few scripted core API scenarios (full/partial input, mashed
+  input, per-difficulty judgment, a groove timeline) and prints the
+  results. See the ns docstring."
+  [& _args]
   (let [bpm core/default-bpm
         beats 16
         schedule (core/beat-schedule bpm 0 beats)]

@@ -66,7 +66,10 @@
                       [{:bpm core/default-bpm :beat-count tense-count}
                        {:bpm (long (* 1.25 core/default-bpm)) :beat-count climax-count}])))
 
-(defn -main [& args]
+(defn -main
+  "Entry point for `clojure -M -m ghosthacker-flow.terminal [beat-count]`.
+  See the ns docstring."
+  [& args]
   (let [beat-count (if-let [a (first args)] (Integer/parseInt a) 8)]
     (println (format "GHOST HACKER: FLOW — terminal prototype (%d beats, TENSE→Sky High)" beat-count))
     (println "Enterキーで各拍を叩いてください。準備ができたらEnterで開始:")
