@@ -286,3 +286,85 @@
   "judge-runの結果をsummaryにして返す（playのbeat-count対応版）。"
   [bpm start-time-ms beat-count input-times]
   (summary (judge-run bpm start-time-ms beat-count input-times)))
+
+;; --- chart（複数セクション/可変bpm）判定 -------------------------------------
+;;
+;; ここまでのjudge-*/beat-*系は「run全体を通して単一bpm」が前提——
+;; TENSE(遅め/疎)→Sky High(速め/密)のようにセクションごとにbpmや拍密度が
+;; 変わる曲を1本の判定対象として扱えない。chart-beatsで複数セクションを
+;; 連結した「拍の絶対時刻msの昇順vector」を作り、judge-chart-*系はそれを
+;; 唯一の入力として判定する（bpmをその都度渡す必要が無い——chart自体が
+;; 拍グリッドの完全な記述）。
+
+(defn section-beats
+  "1セクション分の拍の絶対時刻(ms)を返す。{:bpm :start-ms :beat-count}を
+   受け取り、beat-scheduleと同じ計算をする（chart合成用の呼び名）。"
+  [{:keys [bpm start-ms beat-count]}]
+  (beat-schedule bpm start-ms beat-count))
+
+(defn section-duration-ms
+  "1セクションの長さ(ms)。次セクションのstart-msを自動で継ぎ足す時に使う。"
+  [{:keys [bpm beat-count]}]
+  (* beat-count (beat-interval-ms bpm)))
+
+(defn chart-beats
+  "sections（各 {:bpm :beat-count}、:start-msは省略可）を時系列に連結した
+   1本のchart（拍の絶対時刻msの昇順vector）を返す。各セクションの
+   :start-msは直前セクションの終了時刻から自動で継ぎ足すため、曲の構成
+   （イントロは疎/遅め、サビは密/速め、のようなTENSE→Sky High展開）を
+   セクション単位でオーサリングできる。"
+  [start-time-ms sections]
+  (loop [t start-time-ms
+         secs sections
+         acc []]
+    (if-let [sec (first secs)]
+      (let [beats (section-beats (assoc sec :start-ms t))]
+        (recur (+ t (section-duration-ms sec)) (rest secs) (into acc beats)))
+      acc)))
+
+(defn nearest-chart-beat
+  "chart（拍の絶対時刻msの昇順vector）からinput-time-msに最も近い拍の
+   {:index :offset-ms}を返す（offset-msは符号付き、正=遅い/負=早い）。
+   chartが空ならnil。"
+  [chart input-time-ms]
+  (when (seq chart)
+    (let [[idx t] (apply min-key
+                         (fn [[_ t]] (magnitude (- input-time-ms t)))
+                         (map-indexed vector chart))]
+      {:index idx :offset-ms (- input-time-ms t)})))
+
+(defn judge-chart-input
+  "bpm/start-time-msの単一グリッド前提を外し、chart（chart-beatsで作った
+   拍の絶対時刻ms列）に対してinput-time-msを1回判定する。judge-input-once
+   と同じ対マッシュガードつき（既に成立済みのchart indexへの追加入力は、
+   タイミング精度に関わらずcomboをリセットする:missとして扱う）。"
+  [state chart input-time-ms]
+  (if-let [{:keys [index offset-ms]} (nearest-chart-beat chart input-time-ms)]
+    (if (contains? (:hit-beat-indices state) index)
+      (apply-judgment state :miss)
+      (-> state
+          (apply-judgment (judge offset-ms))
+          (update :hit-beat-indices conj index)))
+    (apply-judgment state :miss)))
+
+(defn judge-chart-sequence
+  "input-times（時系列順）をまとめてjudge-chart-inputで畳み込む。"
+  [state chart input-times]
+  (reduce (fn [s t] (judge-chart-input s chart t)) state input-times))
+
+(defn chart-run
+  "chart全体のうち、input-timesで一度も成立しなかった拍のぶんだけ末尾に
+   明示的な:missを積み増す（judge-runのchart版。空振りを空振りとして
+   数える）。"
+  [chart input-times]
+  (let [after-inputs (judge-chart-sequence initial-state chart input-times)
+        hit? (:hit-beat-indices after-inputs)
+        missed-count (count (remove hit? (range (count chart))))]
+    (reduce (fn [s _] (apply-judgment s :miss))
+            after-inputs
+            (range missed-count))))
+
+(defn chart-play-run
+  "chart-runの結果をsummaryにして返す（play-runのchart版）。"
+  [chart input-times]
+  (summary (chart-run chart input-times)))
