@@ -5,6 +5,13 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 
 ## Unreleased
 
+- `core.cljc`/`core_test.cljc` を
+  [com-junkawasaki/ghosthacker-groove-core](https://github.com/com-junkawasaki/ghosthacker-groove-core)
+  へ切り出した（ADR-2607032600。HARMONYが同じ判定/crossfadeモデルを必要と
+  するため、複製ではなく共有）。`demo.clj`/`terminal.clj`/`terminal_test.clj`
+  は`ghosthacker.groove.core`（新repo、`:git/url`+`:sha`依存）をrequireする
+  よう更新。namespace参照が変わっただけで挙動は変えていない
+  （`clojure -M:test`: 変更前後で0 failures/errors）。
 - `terminal.clj` を chart 判定に載せ替え。既定で前半TENSE(既定bpm)→後半
   Sky High(1.25倍速)へ加速する2セクションの曲(`default-chart`)を
   `core/chart-beats`で組み、`judge-input-once`単一bpm判定の代わりに

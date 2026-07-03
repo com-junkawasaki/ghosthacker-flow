@@ -24,54 +24,31 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 
 ## 現在の実装範囲
 
-`src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
-（`test/` にテストあり、103 assertions）。
+判定/score/combo/groove crossfadeのpure核（`beat-phase-ms`/`judge`/
+`apply-judgment`/`chart-beats`等）は
+[com-junkawasaki/ghosthacker-groove-core](https://github.com/com-junkawasaki/ghosthacker-groove-core)
+に切り出した（[ADR-2607032600](../../../90-docs/adr/2607032600-ghosthacker-groove-core-extraction.md)。
+HARMONY（ポートフォリオ#2、旗艦音ゲー）と共有するため）。API詳細はそちらの
+README/docstringを参照。このリポジトリに残るのはFLOW固有のホストアダプタ:
 
 **プレイ可能な最小プロトタイプ**として `src/ghosthacker_flow/terminal.clj`
 がある。新規依存ゼロ（JVM標準の`future`/`read-line`/`System/currentTimeMillis`
 のみ）で、バックグラウンドスレッドが実時刻でtickを刻みながら、メインスレッドが
 `read-line`で入力を受けて実際の経過時間を判定する——グラフィック/音声は
 無いが、実際に人がEnterキーを叩いて遊べる。既定の曲構成は前半TENSE→後半
-Sky Highへ加速する2セクションのchart（`core/chart-beats`）で、乗るほど
-転調していくgroove-syncのテーマを実際にプレイできる形で体現している。
-本格的なレンダリング/入力/音声
-ホストアダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）
-は依然として別レイヤーの課題。
+Sky Highへ加速する2セクションのchart（`ghosthacker.groove.core/chart-beats`）
+で、乗るほど転調していくgroove-syncのテーマを実際にプレイできる形で体現
+している。
 
-- ビート位相計算・タイミング判定（`beat-phase-ms` / `judge`）
-- combo / `:groove`（TENSE⇄Sky High crossfadeパラメータ）状態遷移
-  （`apply-judgment` / `judge-input`）
-- comboに応じて頭打ちで伸びるscore倍率（`combo-multiplier`。乗り続けるほど
-  得点効率が上がり、乗り続けること自体にscore面の動機づけを作る）
-- accuracy / grade（`:sky-high` `:a` `:b` `:c` `:d`。accuracyとgrooveの両方が
-  高い時だけ最高評価 `:sky-high` になる）
-- ホストアダプタのリザルト画面にそのまま渡せる `summary`
-- `beat-schedule`（譜面オーサリング/テスト用の理想入力列づくり）と、
-  入力列をまとめて評価する統合API `judge-sequence`
-- `judge-input-once` / `judge-sequence-once` — 同じ拍(`beat-index`)への
-  二重入力（連打でのスコア稼ぎ）を検出し、タイミングに関わらず`:miss`
-  扱いにする対マッシュガード
-- `judge-detailed` / `judge-detailed-with-windows` / `judge-detailed-difficulty`
-  — `:early` / `:late` / `:exact` を添えたタイミング判定（「はやい!/おそい!」
-  表示向け）。`judge-input-difficulty`と対称に、難易度ごとの判定窓にも対応
-- `play` — 入力列1本を対マッシュガードつきで評価してsummaryだけ返す最短経路
-  （ただし『何拍流れるはずだったか』は知らないため、入力ゼロ=未プレイ扱いで
-  accuracy 1.0 になる）
-- `judge-run` / `play-run` — 期待される拍数(`beat-count`)と実際の入力を
-  突き合わせ、入力が一度も届かなかった拍を明示的に`:miss`として積み増す。
-  「押さなければmissにすらならない」を防ぐ、`play`の欠けを埋めるバリアント
-- `difficulty-presets`（`:easy`/`:normal`/`:hard`）と `judge-input-difficulty`
-  — 難易度ごとに判定窓(perfect/good)だけを差し替える。score/combo/groove
-  の計算式自体は難易度に依らず共通
-- `beat-interval-ms` に `bpm<=0` の境界ガード。ホスト側の曲/レベル設定が
-  壊れている時、NaN/Infinityを無音で下流に伝播させず即座に例外で弾く
-- **chart（複数セクション/可変bpm）判定** — `judge-*`/`beat-*`系は「run
-  全体を通して単一bpm」前提だが、`chart-beats`で複数セクション（各
-  `{:bpm :beat-count}`）を連結すると、TENSE(遅め/疎)→Sky High(速め/密)の
-  ような曲構成をセクション単位でオーサリングできる。`judge-chart-input` /
-  `judge-chart-sequence` / `chart-run` / `chart-play-run` が、単一bpmの
-  代わりに連結済みchart（拍の絶対時刻msの昇順vector）を唯一の入力として
-  判定する
+`src/ghosthacker_flow/demo.clj` — 入力/音声なしのCLIデモ。coreのAPI表面を
+実行して確認するためのもの。
+
+本格的なレンダリング/入力/音声ホストアダプタ（tech stack未確定。
+`kotoba-lang/kami-engine-sdk` 流用が候補）は依然として別レイヤーの課題。
+network-isekai（isekai.network/gftd/ghosthacker-flow）向けには、coreを
+requireする代わりに`kotoba-lang/kami-engine`のゲスト言語サブセットへ
+1から移植した`logic.cljc`が別途ある（該当リポジトリのpublic/games/gftd/
+ghosthacker-flow/を参照）。
 
 変更履歴は [CHANGELOG.md](CHANGELOG.md)。
 

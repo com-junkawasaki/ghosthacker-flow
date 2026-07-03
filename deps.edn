@@ -1,9 +1,13 @@
-;; GHOST HACKER: FLOW — groove-sync core (ADR-2607023200).
-;; Pure .cljc judgment/state engine only. Rendering/input/audio host
-;; adapters are a separate, not-yet-decided layer (see README).
+;; GHOST HACKER: FLOW — host adapters (ADR-2607023200). The groove-sync
+;; judgment core moved to com-junkawasaki/ghosthacker-groove-core per
+;; ADR-2607032600 — this repo now holds only FLOW's own host adapters
+;; (demo.clj / terminal.clj) plus the network-isekai guest-language port.
 {:paths ["src"]
 
- :deps {org.clojure/clojure {:mvn/version "1.12.0"}}
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}
+        com-junkawasaki/ghosthacker-groove-core
+        {:git/url "https://github.com/com-junkawasaki/ghosthacker-groove-core.git"
+         :sha "67e9ef2b1bba0e0c64f5366f9813338374bebfae"}}
 
  :aliases
  {:test {:extra-paths ["test"]
