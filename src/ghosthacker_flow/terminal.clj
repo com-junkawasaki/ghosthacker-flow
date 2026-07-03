@@ -26,6 +26,17 @@
           (Thread/sleep wait)))
       (print-tick!))))
 
+(defn- countdown!
+  "「3, 2, 1, GO!」を1拍分の間隔で表示する。start-time-msはGO!の瞬間の
+   時刻(=拍0の基準時刻)にする——プレイヤーがGO!に合わせて最初の入力を
+   打ちやすくするための導入演出。"
+  [bpm]
+  (let [interval-ms (long (core/beat-interval-ms bpm))]
+    (doseq [n [3 2 1]]
+      (println n)
+      (Thread/sleep interval-ms))
+    (println "GO!")))
+
 (defn- read-beats!
   "beat-countぶんread-lineで入力を待ち、judge-input-onceで都度判定して
    進行状況を印字する。標準入力がEOF(nil)になったら、そこまでのstateで
@@ -49,6 +60,7 @@
     (println (format "GHOST HACKER: FLOW — terminal prototype (bpm=%d, %d beats)" bpm beat-count))
     (println "Enterキーで各拍を叩いてください。準備ができたらEnterで開始:")
     (read-line)
+    (countdown! bpm)
     (let [start-time-ms (System/currentTimeMillis)
           schedule (core/beat-schedule bpm start-time-ms beat-count)
           ticker (run-ticker! schedule)

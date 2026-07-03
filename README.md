@@ -92,7 +92,8 @@ clojure -M -m ghosthacker-flow.demo
 ```
 
 `src/ghosthacker_flow/terminal.clj` は実際にEnterキーで遊べる最小プロトタイプ
-（引数で拍数を指定可、既定8拍）:
+（引数で拍数を指定可、既定8拍）。「3, 2, 1, GO!」のカウントダウンで
+最初の1拍のタイミングを合わせやすくしている:
 
 ```bash
 clojure -M -m ghosthacker-flow.terminal        # 既定8拍

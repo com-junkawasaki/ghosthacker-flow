@@ -5,6 +5,11 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 
 ## Unreleased
 
+- `terminal.clj` に「3, 2, 1, GO!」のカウントダウンを追加。最初の1拍の
+  タイミングを合わせやすくする導入演出。
+
+## aa3b121 → c248863
+
 - `ghosthacker_flow.terminal` — 新規依存ゼロの、実際にEnterキーで遊べる
   最小ターミナルプロトタイプ。バックグラウンドの`future`が実時刻でtickを
   刻み、メインスレッドが`read-line`+実経過時間で判定する。
