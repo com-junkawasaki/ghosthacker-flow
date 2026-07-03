@@ -21,14 +21,14 @@
     (binding [*out* w] (thunk))
     (str w)))
 
-(deftest read-beats-eof-test
+(deftest read-beats-eof-boundary-test
   (testing "stdinがEOF(空)ならjudgmentゼロのまま即座に打ち切る(ハングしない)"
     (let [chart (core/beat-schedule 120 (System/currentTimeMillis) 4)
           state (silently #(with-in-str "" (read-beats! chart)))]
       (is (= [] (:judgments state)))
       (is (zero? (:score state))))))
 
-(deftest read-beats-quick-input-test
+(deftest read-beats-anti-mash-guard-test
   (testing "複数行を即座に読んでも例外にならない。最初の入力はperfect/goodのいずれか
             (JVM起動オーバーヘッドの誤差を許容)、以降は同じ拍への対マッシュガードで
             全てmissになる"
@@ -38,7 +38,7 @@
       (is (not= :miss (first (:judgments state))))
       (is (every? #(= :miss %) (rest (:judgments state)))))))
 
-(deftest read-beats-partial-input-test
+(deftest read-beats-partial-input-boundary-test
   (testing "beat-count分に満たない入力(途中でEOF)は、そこまでのjudgmentsで打ち切る"
     (let [chart (core/beat-schedule 120 (System/currentTimeMillis) 5)
           state (silently #(with-in-str "\n\n" (read-beats! chart)))]
