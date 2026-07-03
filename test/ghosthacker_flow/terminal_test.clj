@@ -6,6 +6,7 @@
    手動検証済み(EOF/連打とも正しく完了しプロセスがハングしないことを確認)。"
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
+            [ghosthacker-flow.core :as core]
             [ghosthacker-flow.terminal :as terminal]))
 
 (def ^:private read-beats! #'terminal/read-beats!)
@@ -22,7 +23,8 @@
 
 (deftest read-beats-eof-test
   (testing "stdinがEOF(空)ならjudgmentゼロのまま即座に打ち切る(ハングしない)"
-    (let [state (silently #(with-in-str "" (read-beats! 120 (System/currentTimeMillis) 4)))]
+    (let [chart (core/beat-schedule 120 (System/currentTimeMillis) 4)
+          state (silently #(with-in-str "" (read-beats! chart)))]
       (is (= [] (:judgments state)))
       (is (zero? (:score state))))))
 
@@ -30,17 +32,24 @@
   (testing "複数行を即座に読んでも例外にならない。最初の入力はperfect/goodのいずれか
             (JVM起動オーバーヘッドの誤差を許容)、以降は同じ拍への対マッシュガードで
             全てmissになる"
-    (let [start (System/currentTimeMillis)
-          state (silently #(with-in-str "\n\n\n\n" (read-beats! 120 start 4)))]
+    (let [chart (core/beat-schedule 120 (System/currentTimeMillis) 4)
+          state (silently #(with-in-str "\n\n\n\n" (read-beats! chart)))]
       (is (= 4 (count (:judgments state))))
       (is (not= :miss (first (:judgments state))))
       (is (every? #(= :miss %) (rest (:judgments state)))))))
 
 (deftest read-beats-partial-input-test
   (testing "beat-count分に満たない入力(途中でEOF)は、そこまでのjudgmentsで打ち切る"
-    (let [start (System/currentTimeMillis)
-          state (silently #(with-in-str "\n\n" (read-beats! 120 start 5)))]
+    (let [chart (core/beat-schedule 120 (System/currentTimeMillis) 5)
+          state (silently #(with-in-str "\n\n" (read-beats! chart)))]
       (is (= 2 (count (:judgments state)))))))
+
+(deftest default-chart-test
+  (let [default-chart #'terminal/default-chart]
+    (testing "beat-count分の拍を返し、後半セクションは前半より拍間隔が短い(加速)"
+      (let [chart (default-chart 0 8)]
+        (is (= 8 (count chart)))
+        (is (< (- (nth chart 5) (nth chart 4)) (- (nth chart 1) (nth chart 0))))))))
 
 (deftest countdown-test
   (testing "3, 2, 1, GO!の順で表示される（高bpmでsleepを短くしてテストを速くする）"
