@@ -38,33 +38,43 @@
     (println "GO!")))
 
 (defn- read-beats!
-  "beat-countぶんread-lineで入力を待ち、judge-input-onceで都度判定して
-   進行状況を印字する。標準入力がEOF(nil)になったら、そこまでのstateで
-   打ち切る（実プレイでCtrl-D、テストで空stdinを渡した時の両方に対応）。"
-  [bpm start-time-ms beat-count]
+  "chart(拍の絶対時刻ms列)ぶんread-lineで入力を待ち、judge-chart-inputで
+   都度判定して進行状況を印字する。標準入力がEOF(nil)になったら、そこまでの
+   stateで打ち切る（実プレイでCtrl-D、テストで空stdinを渡した時の両方に対応）。"
+  [chart]
   (loop [state core/initial-state i 0]
-    (if (>= i beat-count)
+    (if (>= i (count chart))
       state
       (let [line (read-line)]
         (if (nil? line)
           state
           (let [now (System/currentTimeMillis)
-                next-state (core/judge-input-once state bpm start-time-ms now)
+                next-state (core/judge-chart-input state chart now)
                 judgment (last (:judgments next-state))]
             (println (format " -> %s (combo %d)" (name judgment) (:combo next-state)))
             (recur next-state (inc i))))))))
 
+(defn- default-chart
+  "既定の曲構成: TENSE(既定bpm/前半)からSky High(1.25倍速/後半)へ加速する
+   2セクション。groove-syncのテーマ(乗るほどTENSEからSky Highへ転調)を、
+   セクション単位のテンポ変化として演出する。"
+  [start-time-ms beat-count]
+  (let [tense-count (quot beat-count 2)
+        climax-count (- beat-count tense-count)]
+    (core/chart-beats start-time-ms
+                      [{:bpm core/default-bpm :beat-count tense-count}
+                       {:bpm (long (* 1.25 core/default-bpm)) :beat-count climax-count}])))
+
 (defn -main [& args]
-  (let [bpm core/default-bpm
-        beat-count (if-let [a (first args)] (Integer/parseInt a) 8)]
-    (println (format "GHOST HACKER: FLOW — terminal prototype (bpm=%d, %d beats)" bpm beat-count))
+  (let [beat-count (if-let [a (first args)] (Integer/parseInt a) 8)]
+    (println (format "GHOST HACKER: FLOW — terminal prototype (%d beats, TENSE→Sky High)" beat-count))
     (println "Enterキーで各拍を叩いてください。準備ができたらEnterで開始:")
     (read-line)
-    (countdown! bpm)
+    (countdown! core/default-bpm)
     (let [start-time-ms (System/currentTimeMillis)
-          schedule (core/beat-schedule bpm start-time-ms beat-count)
-          ticker (run-ticker! schedule)
-          state (read-beats! bpm start-time-ms beat-count)]
+          chart (default-chart start-time-ms beat-count)
+          ticker (run-ticker! chart)
+          state (read-beats! chart)]
       (future-cancel ticker)
       (println)
       (println "=== RESULT ===")

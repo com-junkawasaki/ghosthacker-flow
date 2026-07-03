@@ -5,6 +5,12 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 
 ## Unreleased
 
+- `terminal.clj` を chart 判定に載せ替え。既定で前半TENSE(既定bpm)→後半
+  Sky High(1.25倍速)へ加速する2セクションの曲(`default-chart`)を
+  `core/chart-beats`で組み、`judge-input-once`単一bpm判定の代わりに
+  `judge-chart-input`で判定する。プレイヤーが乗るほど転調していく
+  groove-syncのテーマが、実際にプレイできるプロトタイプの曲構成として
+  初めて体現された。
 - `core.cljc` に chart（複数セクション/可変bpm）判定を追加。ここまでの
   `judge-*`/`beat-*`系は「run全体を通して単一bpm」前提だったため、
   TENSE(遅め/疎)→Sky High(速め/密)のようにセクションごとにbpmが変わる

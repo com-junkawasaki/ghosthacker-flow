@@ -31,7 +31,10 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 がある。新規依存ゼロ（JVM標準の`future`/`read-line`/`System/currentTimeMillis`
 のみ）で、バックグラウンドスレッドが実時刻でtickを刻みながら、メインスレッドが
 `read-line`で入力を受けて実際の経過時間を判定する——グラフィック/音声は
-無いが、実際に人がEnterキーを叩いて遊べる。本格的なレンダリング/入力/音声
+無いが、実際に人がEnterキーを叩いて遊べる。既定の曲構成は前半TENSE→後半
+Sky Highへ加速する2セクションのchart（`core/chart-beats`）で、乗るほど
+転調していくgroove-syncのテーマを実際にプレイできる形で体現している。
+本格的なレンダリング/入力/音声
 ホストアダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）
 は依然として別レイヤーの課題。
 
