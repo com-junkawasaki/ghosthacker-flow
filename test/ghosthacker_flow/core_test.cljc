@@ -272,3 +272,70 @@
     (let [schedule (core/beat-schedule 120 0 20)]
       (is (= (core/play 120 0 schedule)
              (core/play-run 120 0 20 schedule))))))
+
+(deftest section-beats-test
+  (testing "beat-scheduleと同じ計算"
+    (is (= (core/beat-schedule 120 1000 4)
+           (core/section-beats {:bpm 120 :start-ms 1000 :beat-count 4})))))
+
+(deftest section-duration-ms-test
+  (is (== (* 4 (core/beat-interval-ms 120))
+          (core/section-duration-ms {:bpm 120 :beat-count 4}))))
+
+(deftest chart-beats-test
+  (testing "1セクションはsection-beatsと同じ"
+    (is (= (core/section-beats {:bpm 120 :start-ms 0 :beat-count 4})
+           (core/chart-beats 0 [{:bpm 120 :beat-count 4}]))))
+  (testing "2セクション目は1セクション目の終了時刻から連結される"
+    (let [chart (core/chart-beats 0 [{:bpm 120 :beat-count 4}
+                                     {:bpm 240 :beat-count 4}])
+          sec1-end (core/section-duration-ms {:bpm 120 :beat-count 4})]
+      (is (= 8 (count chart)))
+      (is (= (subvec chart 0 4) (core/section-beats {:bpm 120 :start-ms 0 :beat-count 4})))
+      (is (= (subvec chart 4 8) (core/section-beats {:bpm 240 :start-ms sec1-end :beat-count 4})))
+      (testing "TENSE(遅い)→Sky High(速い)のような加速展開: 後半セクションの拍間隔は短い"
+        (is (< (- (nth chart 5) (nth chart 4)) (- (nth chart 1) (nth chart 0))))))))
+
+(deftest nearest-chart-beat-test
+  (let [chart [0.0 500.0 1000.0]]
+    (is (= {:index 0 :offset-ms 10.0} (core/nearest-chart-beat chart 10.0)))
+    (is (= {:index 1 :offset-ms -20.0} (core/nearest-chart-beat chart 480.0)))
+    (is (= {:index 2 :offset-ms 0.0} (core/nearest-chart-beat chart 1000.0)))
+    (testing "空chartはnil"
+      (is (nil? (core/nearest-chart-beat [] 0.0))))))
+
+(deftest judge-chart-input-test
+  (let [chart [0.0 500.0 1000.0]]
+    (testing "ジャストならperfect"
+      (let [state (core/judge-chart-input core/initial-state chart 500.0)]
+        (is (= [:perfect] (:judgments state)))
+        (is (= #{1} (:hit-beat-indices state)))))
+    (testing "同じchart indexへの二度目の入力は対マッシュガードで:miss"
+      (let [state (-> core/initial-state
+                      (core/judge-chart-input chart 500.0)
+                      (core/judge-chart-input chart 505.0))]
+        (is (= [:perfect :miss] (:judgments state)))))))
+
+(deftest judge-chart-sequence-and-chart-run-test
+  (testing "変則bpmのchartでも全拍ジャスト入力すればperfectが並ぶ"
+    (let [chart (core/chart-beats 0 [{:bpm 100 :beat-count 3} {:bpm 200 :beat-count 3}])
+          state (core/judge-chart-sequence core/initial-state chart chart)]
+      (is (every? #(= :perfect %) (:judgments state)))
+      (is (= 6 (:max-combo state)))))
+  (testing "chart-runは空振り拍ぶんだけ:missを積み増す(judge-runのchart版)"
+    (let [chart (core/chart-beats 0 [{:bpm 120 :beat-count 4}])
+          partial-input (subvec chart 0 2)
+          state (core/chart-run chart partial-input)]
+      (is (= [:perfect :perfect :miss :miss] (:judgments state))))))
+
+(deftest chart-play-run-test
+  (testing "全拍ジャストで最高評価"
+    (let [chart (core/chart-beats 0 [{:bpm 124 :beat-count 20}])
+          result (core/chart-play-run chart chart)]
+      (is (= :sky-high (:grade result)))
+      (is (== 1.0 (:accuracy result)))))
+  (testing "何も入力しなければ空振りが正しくmiss計上される(play-runのchart版と同じ規約)"
+    (let [chart (core/chart-beats 0 [{:bpm 124 :beat-count 4}])
+          result (core/chart-play-run chart [])]
+      (is (== 0.0 (:accuracy result)))
+      (is (= :d (:grade result))))))

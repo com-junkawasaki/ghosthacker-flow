@@ -62,6 +62,13 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
   の計算式自体は難易度に依らず共通
 - `beat-interval-ms` に `bpm<=0` の境界ガード。ホスト側の曲/レベル設定が
   壊れている時、NaN/Infinityを無音で下流に伝播させず即座に例外で弾く
+- **chart（複数セクション/可変bpm）判定** — `judge-*`/`beat-*`系は「run
+  全体を通して単一bpm」前提だが、`chart-beats`で複数セクション（各
+  `{:bpm :beat-count}`）を連結すると、TENSE(遅め/疎)→Sky High(速め/密)の
+  ような曲構成をセクション単位でオーサリングできる。`judge-chart-input` /
+  `judge-chart-sequence` / `chart-run` / `chart-play-run` が、単一bpmの
+  代わりに連結済みchart（拍の絶対時刻msの昇順vector）を唯一の入力として
+  判定する
 
 変更履歴は [CHANGELOG.md](CHANGELOG.md)。
 

@@ -5,6 +5,14 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 
 ## Unreleased
 
+- `core.cljc` に chart（複数セクション/可変bpm）判定を追加。ここまでの
+  `judge-*`/`beat-*`系は「run全体を通して単一bpm」前提だったため、
+  TENSE(遅め/疎)→Sky High(速め/密)のようにセクションごとにbpmが変わる
+  曲を1本の判定対象として扱えなかった。`chart-beats`で複数セクション
+  （各`{:bpm :beat-count}`）を連結した「拍の絶対時刻msの昇順vector」を
+  作り、`judge-chart-input`/`judge-chart-sequence`/`chart-run`/
+  `chart-play-run`はそれを唯一の入力として判定する
+  （`section-beats`/`section-duration-ms`/`nearest-chart-beat`が内部実装）。
 - `terminal.clj` に「3, 2, 1, GO!」のカウントダウンを追加。最初の1拍の
   タイミングを合わせやすくする導入演出。
 
