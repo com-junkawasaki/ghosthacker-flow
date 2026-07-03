@@ -2,12 +2,13 @@
   "GHOST HACKER: FLOW — runnable CLI demo of the groove-sync core.
 
   Not a host adapter — no real input/audio/rendering here. Just exercises the
-  pure API in ghosthacker-flow.core end-to-end on a few scripted runs and
-  prints what it produces, so the API surface can be sanity-checked by
-  actually running it instead of only reading unit tests.
+  pure API in ghosthacker.groove.core (com-junkawasaki/ghosthacker-groove-core)
+  end-to-end on a few scripted runs and prints what it produces, so the API
+  surface can be sanity-checked by actually running it instead of only
+  reading unit tests.
 
   Run: clojure -M -m ghosthacker-flow.demo"
-  (:require [ghosthacker-flow.core :as core]))
+  (:require [ghosthacker.groove.core :as core]))
 
 (defn- print-summary [label result]
   (println (format "%-24s score=%-6d max-combo=%-3d accuracy=%.2f groove=%.2f grade=%s"

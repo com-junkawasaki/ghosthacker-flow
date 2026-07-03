@@ -5,11 +5,12 @@
   in this project: a background thread (`future`) sleeps to each beat's
   wall-clock time and prints a tick; the main thread blocks on `read-line`
   for each beat and judges the real elapsed time against
-  `ghosthacker-flow.core`. No audio/rendering — just proof that the pure
-  core can drive a genuinely timed, interactive loop end-to-end.
+  `ghosthacker.groove.core` (com-junkawasaki/ghosthacker-groove-core). No
+  audio/rendering — just proof that the pure core can drive a genuinely
+  timed, interactive loop end-to-end.
 
   Run: clojure -M -m ghosthacker-flow.terminal [beat-count]"
-  (:require [ghosthacker-flow.core :as core]))
+  (:require [ghosthacker.groove.core :as core]))
 
 (defn- print-tick! []
   (print "♪ ")

@@ -6,7 +6,7 @@
    手動検証済み(EOF/連打とも正しく完了しプロセスがハングしないことを確認)。"
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [ghosthacker-flow.core :as core]
+            [ghosthacker.groove.core :as core]
             [ghosthacker-flow.terminal :as terminal]))
 
 (def ^:private read-beats! #'terminal/read-beats!)
