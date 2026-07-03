@@ -1,10 +1,18 @@
 # Changelog
 
-pure `.cljc` groove-sync core の変更履歴（ADR-2607023200）。レンダリング/
-入力/音声ホストアダプタは未着手のため、ここは `ghosthacker-flow.core` の
-API変遷の記録。
+pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
+プロトタイプ実装の変更履歴（ADR-2607023200）。
 
 ## Unreleased
+
+- `ghosthacker_flow.terminal` — 新規依存ゼロの、実際にEnterキーで遊べる
+  最小ターミナルプロトタイプ。バックグラウンドの`future`が実時刻でtickを
+  刻み、メインスレッドが`read-line`+実経過時間で判定する。
+  - 実装中に見つけた実バグ: `future`はclojure.lang.Agentの非daemonスレッド
+    プールを使うため、`shutdown-agents`を呼ばないとロジック完了後もJVM
+    プロセスが終了せずハングする（15秒timeoutで実際に検証・再現・修正）。
+
+## a0bc086 → aa3b121
 
 - lint: `:lint`エイリアス（clj-kondoをClojars経由で取得、Homebrew等の
   システムインストール不要）をCIにも追加。現状 errors: 0, warnings: 0。

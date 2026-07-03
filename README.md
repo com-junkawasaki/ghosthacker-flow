@@ -25,9 +25,15 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 ## 現在の実装範囲
 
 `src/ghosthacker_flow/core.cljc` に、以下の **pure ロジックのみ** を実装済み
-（`test/` にテストあり、103 assertions）。レンダリング・入力・音声の各ホスト
-アダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）は
-未実装。
+（`test/` にテストあり、103 assertions）。
+
+**プレイ可能な最小プロトタイプ**として `src/ghosthacker_flow/terminal.clj`
+がある。新規依存ゼロ（JVM標準の`future`/`read-line`/`System/currentTimeMillis`
+のみ）で、バックグラウンドスレッドが実時刻でtickを刻みながら、メインスレッドが
+`read-line`で入力を受けて実際の経過時間を判定する——グラフィック/音声は
+無いが、実際に人がEnterキーを叩いて遊べる。本格的なレンダリング/入力/音声
+ホストアダプタ（tech stack未確定。`kotoba-lang/kami-engine-sdk` 流用が候補）
+は依然として別レイヤーの課題。
 
 - ビート位相計算・タイミング判定（`beat-phase-ms` / `judge`）
 - combo / `:groove`（TENSE⇄Sky High crossfadeパラメータ）状態遷移
@@ -83,6 +89,14 @@ clojure -M:lint
 
 ```bash
 clojure -M -m ghosthacker-flow.demo
+```
+
+`src/ghosthacker_flow/terminal.clj` は実際にEnterキーで遊べる最小プロトタイプ
+（引数で拍数を指定可、既定8拍）:
+
+```bash
+clojure -M -m ghosthacker-flow.terminal        # 既定8拍
+clojure -M -m ghosthacker-flow.terminal 16     # 16拍
 ```
 
 ## ライセンス
