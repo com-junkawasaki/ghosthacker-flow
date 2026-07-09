@@ -5,6 +5,12 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 
 ## Unreleased
 
+- ブラウザhostアダプタ追加（ADR-2607100900 follow-up (b)）: `web.cljs`
+  （reagent、Web Audioでビートクロック+合成メトロノーム音、`:groove`は
+  視覚的TENSE⇄Sky Highクロスフェード）+ `shadow-cljs.edn`/`package.json`/
+  `public/index.html`。headless DOM上で実keydown/click操作による通し
+  （START→カウントダウン→8拍judge→result画面→もう一度で初期状態に復帰）を
+  手動検証済み。
 - `core.cljc`/`core_test.cljc` を
   [com-junkawasaki/ghosthacker-groove-core](https://github.com/com-junkawasaki/ghosthacker-groove-core)
   へ切り出した（ADR-2607032600。HARMONYが同じ判定/crossfadeモデルを必要と

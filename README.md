@@ -43,8 +43,20 @@ Sky Highへ加速する2セクションのchart（`ghosthacker.groove.core/chart
 `src/ghosthacker_flow/demo.clj` — 入力/音声なしのCLIデモ。coreのAPI表面を
 実行して確認するためのもの。
 
-本格的なレンダリング/入力/音声ホストアダプタ（tech stack未確定。
-`kotoba-lang/kami-engine-sdk` 流用が候補）は依然として別レイヤーの課題。
+**ブラウザで遊べるホストアダプタ**が `src/ghosthacker_flow/web.cljs`
+（reagent、ADR-2607100900 follow-up (b)）: `kami-engine-sdk`調査の結果
+（実体はwasm-bindgen Rustエンジンを包むSvelte/TS SDKで、cljsからも同じ
+wasmモジュールを直接呼べる）を踏まえ、リアルタイム判定と音声は
+ClojureScript側で先に成立させた。作曲済みの2レイヤー楽曲は存在しない
+ため、Web Audioの`AudioContext.currentTime`（`performance.now()`より
+高精度なスケジューリング）でビートクロックと合成メトロノーム音
+（オシレーター、外部音声アセット不要）の両方を駆動しつつ、`:groove`は
+音声crossfadeの代わりに見た目のTENSE(寒色)⇄Sky High(暖色)crossfadeを
+駆動する。Web Audio非対応環境（このリポジトリ自身のheadless検証等）
+では`performance.now()`+無音に自動degrade。
+
+本格的なレンダリング（`kami-engine-sdk`のようなキャンバス/wasm描画）は
+依然として別レイヤーの課題——現状はDOM/CSSのみ。
 network-isekai（isekai.network/gftd/ghosthacker-flow）向けには、coreを
 requireする代わりに`kotoba-lang/kami-engine`のゲスト言語サブセットへ
 1から移植した`logic.cljc`が別途ある（該当リポジトリのpublic/games/gftd/
@@ -85,6 +97,14 @@ clojure -M -m ghosthacker-flow.demo
 ```bash
 clojure -M -m ghosthacker-flow.terminal        # 既定8拍
 clojure -M -m ghosthacker-flow.terminal 16     # 16拍
+```
+
+ブラウザで遊んでみる（`npm install`は初回のみ、Spaceキーで入力）:
+
+```bash
+npm install
+npx shadow-cljs watch app   # http://localhost:8292 で自動リロード開発
+npx shadow-cljs release app # public/ に静的バンドルをビルド(デプロイ可能)
 ```
 
 ## ライセンス
