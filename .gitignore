@@ -3,3 +3,13 @@
 /.nrepl-port
 *.jar
 .DS_Store
+
+# JS/shadow-cljs
+node_modules/
+.shadow-cljs/
+
+# shadow-cljs compiled output -- public/index.html is hand-authored and
+# stays tracked; everything shadow-cljs generates into public/ does not.
+/public/main.js
+/public/manifest.edn
+/public/cljs-runtime/
