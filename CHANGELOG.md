@@ -5,6 +5,16 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 
 ## Unreleased
 
+- 実描画レイヤー追加: `kotoba-lang/webgpu`（宣言的WebGPU-from-EDN、
+  Rust/wasm不要、network-isekaiが実運用中の同じ執行系。CLAUDE.mdの
+  「app/gameの描画のために新規Rust crateを書かない」ルール、2026-07-10）
+  を`:local/root`依存として追加。`:groove`で色付いた12個の「ログの粒子」
+  シーンを`#flow-canvas`に描画、既存のreagent+Web Audioホストの背景として
+  合成する。WebGPU非対応環境では自動degrade（DOM/CSSのみで従来通り遊べる）。
+  `kami.webgpu.ir/valid?`でシーン構造の妥当性をJVM上で確認済み（groove
+  0.0→1.0でsky/instance色が寒色→暖色に正しく変化）。headless jsdom
+  playthroughで既存ゲームロジックに回帰が無いことも再確認（`window.
+  requestAnimationFrame`未定義環境でのフォールバックも追加修正）。
 - ブラウザhostアダプタ追加（ADR-2607100900 follow-up (b)）: `web.cljs`
   （reagent、Web Audioでビートクロック+合成メトロノーム音、`:groove`は
   視覚的TENSE⇄Sky Highクロスフェード）+ `shadow-cljs.edn`/`package.json`/

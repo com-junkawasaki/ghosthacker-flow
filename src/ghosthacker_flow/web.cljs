@@ -20,10 +20,24 @@
 
   Same input/judgment shape as ghosthacker_flow/terminal.clj: one input
   event per chart beat, judged with `core/judge-chart-input` against the
-  nearest chart beat -- a keydown (Space) instead of a `read-line`."
+  nearest chart beat -- a keydown (Space) instead of a `read-line`.
+
+  Visual layer: `kotoba-lang/webgpu` (`kami.webgpu` + `kami.webgpu.ir`) --
+  declarative WebGPU-from-EDN, no Rust/wasm (CLAUDE.md's 2026-07-10 rule:
+  don't author new Rust crates for app/game rendering; this repo's WebGPU
+  scene is composed as plain EDN instances and drawn by that library's
+  existing browser executor, the same one network-isekai already uses
+  live). Renders the 情報場 (information field) as a handful of drifting
+  cuboid \"log particles\" (証拠の欠片) whose colour follows `:groove`
+  exactly like the CSS crossfade it sits behind. Degrades silently (falls
+  back to the CSS-only background) with no WebGPU support (jsdom, older
+  browsers) -- `kami.webgpu/init!` rejects its promise in that case,
+  caught below, same graceful-degradation spirit as the Web Audio path."
   (:require [reagent.core :as r]
             [reagent.dom :as rdom]
-            [ghosthacker.groove.core :as core]))
+            [ghosthacker.groove.core :as core]
+            [kami.webgpu :as gpu]
+            [kami.webgpu.ir :as wir]))
 
 ;; --- clock / audio ----------------------------------------------------
 
@@ -81,6 +95,85 @@
            :last-judgment nil
            :countdown-label "3"}))
 
+;; --- WebGPU visual layer (情報場 / information field) ----------------------
+
+(defonce ^:private !gpu-ctx (atom nil))
+
+(def ^:private particle-count 12)
+
+(def ^:private particle-seeds
+  "Deterministic scatter positions for the log particles (fixed, not
+  random, so the scene is reproducible run to run -- same spirit as the
+  portfolio's other sample data being fixed rather than shuffled)."
+  (vec (for [i (range particle-count)]
+         {:x (- (* (mod (* i 7) particle-count) 1.6) 9)
+          :z (- (* (mod (* i 5) particle-count) 1.4) 7)
+          :phase (* i 0.6)})))
+
+(defn- hsl->rgb
+  "h in [0,360), s/l in [0,1] -> [r g b] in [0,1]. A small local helper --
+  no external color library needed for this one conversion."
+  [h s l]
+  (let [c (* (- 1 (js/Math.abs (- (* 2 l) 1))) s)
+        h' (/ h 60.0)
+        x (* c (- 1 (js/Math.abs (- (mod h' 2) 1))))
+        [r1 g1 b1] (cond
+                     (< h' 1) [c x 0]
+                     (< h' 2) [x c 0]
+                     (< h' 3) [0 c x]
+                     (< h' 4) [0 x c]
+                     (< h' 5) [x 0 c]
+                     :else    [c 0 x])
+        m (- l (/ c 2))]
+    [(+ r1 m) (+ g1 m) (+ b1 m)]))
+
+(defn- field-scene
+  "The render-IR for one frame: a sky tinted by :groove (TENSE cool blue
+  <-> Sky High warm gold, same hue sweep as the CSS crossfade behind it)
+  and `particle-count` drifting cuboids -- the ログの粒子 (log particles /
+  evidence fragments) FLOW's concept describes the player skating across
+  the information field to collect."
+  [t-sec groove]
+  (let [hue (- 220 (* groove 180))
+        color (hsl->rgb hue 0.55 0.55)
+        [sr sg sb] (hsl->rgb hue 0.35 0.16)]
+    (wir/render-ir
+     (wir/sky [sr sg sb] [-0.3 -0.9 -0.3] [1.0 0.97 0.9])
+     (for [{:keys [x z phase]} particle-seeds]
+       (wir/instance [x (+ 0.6 (* 0.4 (js/Math.sin (+ t-sec phase)))) z]
+                     color [0.5 0.5]
+                     :emissive (+ 0.15 (* 0.35 groove))))
+     [0 16 20] [0 0 0])))
+
+(defn- raf!
+  "requestAnimationFrame, guarded -- absent in jsdom (this repo's own
+  headless verification) and very old browsers. No-ops instead of
+  throwing when unavailable."
+  [f]
+  (when-let [r (.-requestAnimationFrame js/window)]
+    (.call r js/window f)))
+
+(defn- ensure-gpu!
+  "Initializes kami-webgpu on `canvas` once. No-ops (leaves !gpu-ctx nil,
+  the CSS crossfade stays as the whole visual) when WebGPU isn't
+  available -- `kami.webgpu/init!` rejects its promise in that case
+  (jsdom / older browsers), caught here rather than thrown."
+  [canvas]
+  (when (and canvas (not @!gpu-ctx))
+    (-> (gpu/init! canvas)
+        (.then (fn [ctx] (reset! !gpu-ctx ctx)))
+        (.catch (fn [_] nil)))))
+
+(defn- gpu-frame!
+  "requestAnimationFrame loop: redraws the information field every frame
+  from the current :groove (defaults to 0.0 -- idle/countdown still show
+  a calm TENSE field). No-ops (just reschedules) until GPU init resolves."
+  [now-ms-val]
+  (when-let [ctx @!gpu-ctx]
+    (let [groove (get-in @state [:groove-state :groove] 0.0)]
+      (gpu/draw! ctx (field-scene (/ now-ms-val 1000.0) groove))))
+  (raf! gpu-frame!))
+
 (defn- hit! []
   (when (= (:phase @state) :playing)
     (let [t (now-ms)
@@ -128,11 +221,13 @@
 
 (defn- groove-bg
   "TENSE(g=0, cool blue) -> Sky High(g=1, warm gold), same crossfade the
-  pure core's :groove is meant to drive, rendered visually instead of
-  as an audio layer mix (no composed music assets exist to mix)."
+  pure core's :groove is meant to drive. Translucent (not opaque) so the
+  WebGPU information-field scene shows through behind this panel when
+  available; the panel alone still reads fine as the whole visual with
+  no WebGPU support."
   [g]
   (let [hue (- 220 (* g 180))]
-    {:background (str "linear-gradient(135deg, hsl(" hue ",70%,14%), hsl(" hue ",70%,24%))")}))
+    {:background (str "linear-gradient(135deg, hsla(" hue ",70%,14%,0.75), hsla(" hue ",70%,24%,0.75))")}))
 
 (defn- start-screen []
   [:div.flow-app
@@ -175,6 +270,8 @@
 (defn ^:export mount []
   (when-let [el (.getElementById js/document "app")]
     (.addEventListener js/window "keydown" on-keydown)
+    (ensure-gpu! (.getElementById js/document "flow-canvas"))
+    (raf! gpu-frame!)
     (rdom/render [app] el)))
 
 (defn ^:export init [] (mount))
