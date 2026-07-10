@@ -8,4 +8,8 @@
                 :output-dir "public"
                 :asset-path "."
                 :modules    {:main {:init-fn ghosthacker-flow.web/init}}
-                :dev-http   {8292 "public"}}}}
+                :dev-http   {8292 "public"}
+                ;; :simple, not :advanced -- kami.webgpu calls the raw
+                ;; WebGPU JS API directly (navigator.gpu/GPUDevice/...);
+                ;; :advanced would rename those external method names.
+                :release    {:compiler-options {:optimizations :simple}}}}}

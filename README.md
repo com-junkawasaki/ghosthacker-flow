@@ -55,8 +55,23 @@ ClojureScript側で先に成立させた。作曲済みの2レイヤー楽曲は
 駆動する。Web Audio非対応環境（このリポジトリ自身のheadless検証等）
 では`performance.now()`+無音に自動degrade。
 
-本格的なレンダリング（`kami-engine-sdk`のようなキャンバス/wasm描画）は
-依然として別レイヤーの課題——現状はDOM/CSSのみ。
+**実描画（キャンバス/WebGPU）**も同じ`web.cljs`に追加済み: CLAUDE.mdの
+「app/gameの描画のために新規Rust crateを書かない」ルール（2026-07-10）を
+踏まえ、`kami-engine-sdk`のwasm export（VRMキャラビューア専用で今回の
+用途には不適）や`kami-app-animeka-timeline`型の新規Rust crateパターンは
+採らず、**`kotoba-lang/webgpu`（宣言的WebGPU-from-EDN、Rust/wasm不要、
+network-isekaiが実運用中の同じ執行系）**を`:local/root`依存として採用。
+`:groove`で色付いた12個の「ログの粒子」（証拠の欠片）が情報場を漂う
+シーンを`kami.webgpu.ir/render-ir`で組み立て、既存のreagent+Web Audio
+ホストの背景として`#flow-canvas`に描画する。WebGPU非対応環境（jsdom、
+旧ブラウザ）では`kami.webgpu/init!`のPromiseがrejectされ、DOM/CSSの
+crossfadeだけで従来通り遊べる（無音/無キャンバスへの自動degrade、Web
+Audioと同じ精神）。**この`webgpu`依存はwest管理下の兄弟パス
+（`../../kotoba-lang/webgpu`）を前提とするため、west checkoutの外で
+このリポジトリ単体をcloneしてもブラウザビルドだけは解決できない**
+（network-isekaiの`kami-webgpu`利用も同じ制約を持つ、既存の許容トレード
+オフ）——JVM側の`:test`/`:lint`はこの依存に一切触れないため、CIには
+影響しない。
 network-isekai（isekai.network/gftd/ghosthacker-flow）向けには、coreを
 requireする代わりに`kotoba-lang/kami-engine`のゲスト言語サブセットへ
 1から移植した`logic.cljc`が別途ある（該当リポジトリのpublic/games/gftd/
