@@ -1,6 +1,6 @@
 (ns ghosthacker-flow.demo-test
   (:require [clojure.test :refer [deftest is]]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [ghosthacker-flow.demo :as demo]))
 
 (deftest main-smoke-test
