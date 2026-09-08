@@ -4,7 +4,7 @@
    futureを使えなくなる)。よって-mainそのものはテストせず、read-beats!
    （private var経由）を直接叩く。実プロセスとしての-main自体は
    手動検証済み(EOF/連打とも正しく完了しプロセスがハングしないことを確認)。"
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]
             [ghosthacker.groove.core :as core]
             [ghosthacker-flow.terminal :as terminal]))
