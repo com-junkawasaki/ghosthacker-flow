@@ -31,7 +31,7 @@ Ghost Hacker ゲームポートフォリオ第1弾。設計は
 HARMONY（ポートフォリオ#2、旗艦音ゲー）と共有するため）。API詳細はそちらの
 README/docstringを参照。このリポジトリに残るのはFLOW固有のホストアダプタ:
 
-**プレイ可能な最小プロトタイプ**として `src/ghosthacker_flow/terminal.clj`
+**プレイ可能な最小プロトタイプ**として `src/ghosthacker_flow/terminal.kotoba`
 がある。新規依存ゼロ（JVM標準の`future`/`read-line`/`System/currentTimeMillis`
 のみ）で、バックグラウンドスレッドが実時刻でtickを刻みながら、メインスレッドが
 `read-line`で入力を受けて実際の経過時間を判定する——グラフィック/音声は
@@ -40,10 +40,10 @@ Sky Highへ加速する2セクションのchart（`ghosthacker.groove.core/chart
 で、乗るほど転調していくgroove-syncのテーマを実際にプレイできる形で体現
 している。
 
-`src/ghosthacker_flow/demo.clj` — 入力/音声なしのCLIデモ。coreのAPI表面を
+`src/ghosthacker_flow/demo.kotoba` — 入力/音声なしのCLIデモ。coreのAPI表面を
 実行して確認するためのもの。
 
-**ブラウザで遊べるホストアダプタ**が `src/ghosthacker_flow/web.cljs`
+**ブラウザで遊べるホストアダプタ**が `src/ghosthacker_flow/web.kotoba`
 （reagent、ADR-2607100900 follow-up (b)）: `kami-engine-sdk`調査の結果
 （実体はwasm-bindgen Rustエンジンを包むSvelte/TS SDKで、cljsからも同じ
 wasmモジュールを直接呼べる）を踏まえ、リアルタイム判定と音声は
@@ -96,7 +96,7 @@ clojure -M:lint
 
 `main`へのpush/PRで `.github/workflows/test.yml` が自動でテスト+lintを実行する。
 
-`src/ghosthacker_flow/demo.clj`（JVM専用、host adapterではない）で、
+`src/ghosthacker_flow/demo.kotoba`（JVM専用、host adapterではない）で、
 上記APIを一通り動かして結果を標準出力に表示できる。`:groove`
 （TENSE⇄Sky High crossfadeパラメータ）の推移はASCIIバーの1拍1行タイムラインで
 可視化される:
@@ -105,7 +105,7 @@ clojure -M:lint
 clojure -M -m ghosthacker-flow.demo
 ```
 
-`src/ghosthacker_flow/terminal.clj` は実際にEnterキーで遊べる最小プロトタイプ
+`src/ghosthacker_flow/terminal.kotoba` は実際にEnterキーで遊べる最小プロトタイプ
 （引数で拍数を指定可、既定8拍）。「3, 2, 1, GO!」のカウントダウンで
 最初の1拍のタイミングを合わせやすくしている:
 
