@@ -9,7 +9,7 @@
   audio/rendering — just proof that the pure core can drive a genuinely
   timed, interactive loop end-to-end.
 
-  Run: clojure -M -m ghosthacker-flow.terminal [beat-count]"
+  Run: kbb -M -m ghosthacker-flow.terminal [beat-count]"
   (:require [ghosthacker.groove.core :as core]))
 
 (defn- print-tick! []
@@ -67,7 +67,7 @@
                        {:bpm (long (* 1.25 core/default-bpm)) :beat-count climax-count}])))
 
 (defn -main
-  "Entry point for `clojure -M -m ghosthacker-flow.terminal [beat-count]`.
+  "Entry point for `kbb -M -m ghosthacker-flow.terminal [beat-count]`.
   See the ns docstring."
   [& args]
   (let [beat-count (if-let [a (first args)] (Integer/parseInt a) 8)]
