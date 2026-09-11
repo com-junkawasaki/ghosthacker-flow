@@ -85,13 +85,13 @@ ghosthacker-flow/を参照）。
 ## 開発
 
 ```bash
-clojure -M:test
+kbb -M:test
 ```
 
 Lint（clj-kondo、Clojars経由でHomebrew等の別インストール不要）:
 
 ```bash
-clojure -M:lint
+kbb -M:lint
 ```
 
 `main`へのpush/PRで `.github/workflows/test.yml` が自動でテスト+lintを実行する。
@@ -102,7 +102,7 @@ clojure -M:lint
 可視化される:
 
 ```bash
-clojure -M -m ghosthacker-flow.demo
+kbb -M -m ghosthacker-flow.demo
 ```
 
 `src/ghosthacker_flow/terminal.kotoba` は実際にEnterキーで遊べる最小プロトタイプ
@@ -110,16 +110,16 @@ clojure -M -m ghosthacker-flow.demo
 最初の1拍のタイミングを合わせやすくしている:
 
 ```bash
-clojure -M -m ghosthacker-flow.terminal        # 既定8拍
-clojure -M -m ghosthacker-flow.terminal 16     # 16拍
+kbb -M -m ghosthacker-flow.terminal        # 既定8拍
+kbb -M -m ghosthacker-flow.terminal 16     # 16拍
 ```
 
 ブラウザで遊んでみる（`npm install`は初回のみ、Spaceキーで入力）:
 
 ```bash
 npm install
-npx shadow-cljs watch app   # http://localhost:8292 で自動リロード開発
-npx shadow-cljs release app # public/ に静的バンドルをビルド(デプロイ可能)
+amu compile --target wasm32-browser app   # http://localhost:8292 で自動リロード開発
+amu compile --target wasm32-browser app # public/ に静的バンドルをビルド(デプロイ可能)
 ```
 
 ## ライセンス

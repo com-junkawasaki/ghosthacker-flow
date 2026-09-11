@@ -7,7 +7,7 @@
   surface can be sanity-checked by actually running it instead of only
   reading unit tests.
 
-  Run: clojure -M -m ghosthacker-flow.demo"
+  Run: kbb -M -m ghosthacker-flow.demo"
   (:require [ghosthacker.groove.core :as core]))
 
 (defn- print-summary [label result]
