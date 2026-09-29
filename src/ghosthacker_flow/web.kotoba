@@ -23,7 +23,7 @@
   nearest chart beat -- a keydown (Space) instead of a `read-line`.
 
   Visual layer: `kotoba-lang/webgpu` (`kami.webgpu` + `kami.webgpu.ir`) --
-  declarative WebGPU-from-EDN, no Rust/wasm (CLAUDE.md's 2026-07-10 rule:
+  declarative WebGPU-from-EDN, no Rust/wasm (AGENTS.md's 2026-07-10 rule:
   don't author new Rust crates for app/game rendering; this repo's WebGPU
   scene is composed as plain EDN instances and drawn by that library's
   existing browser executor, the same one network-isekai already uses
