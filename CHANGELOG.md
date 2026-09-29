@@ -6,7 +6,7 @@ pure `.cljc` groove-sync core（`ghosthacker-flow.core`）と、それを使う
 ## Unreleased
 
 - 実描画レイヤー追加: `kotoba-lang/webgpu`（宣言的WebGPU-from-EDN、
-  Rust/wasm不要、network-isekaiが実運用中の同じ執行系。CLAUDE.mdの
+  Rust/wasm不要、network-isekaiが実運用中の同じ執行系。AGENTS.mdの
   「app/gameの描画のために新規Rust crateを書かない」ルール、2026-07-10）
   を`:local/root`依存として追加。`:groove`で色付いた12個の「ログの粒子」
   シーンを`#flow-canvas`に描画、既存のreagent+Web Audioホストの背景として

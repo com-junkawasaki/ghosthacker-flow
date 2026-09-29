@@ -27,7 +27,7 @@
   ;; music layers exist yet, so :groove drives a visual TENSE<->Sky High
   ;; crossfade instead of an audio one -- see web.cljs docstring). Visual
   ;; layer is kotoba-lang/webgpu (declarative WebGPU-from-EDN, no Rust/wasm
-  ;; -- CLAUDE.md's "no new Rust crates for app rendering" rule, 2026-07-10)
+  ;; -- AGENTS.md's "no new Rust crates for app rendering" rule, 2026-07-10)
   ;; -- :local/root like network-isekai's real usage of the same lib, so
   ;; this build only resolves from within the west-managed monorepo
   ;; checkout (same constraint network-isekai already has); the JVM

@@ -55,7 +55,7 @@ ClojureScript側で先に成立させた。作曲済みの2レイヤー楽曲は
 駆動する。Web Audio非対応環境（このリポジトリ自身のheadless検証等）
 では`performance.now()`+無音に自動degrade。
 
-**実描画（キャンバス/WebGPU）**も同じ`web.cljs`に追加済み: CLAUDE.mdの
+**実描画（キャンバス/WebGPU）**も同じ`web.cljs`に追加済み: AGENTS.mdの
 「app/gameの描画のために新規Rust crateを書かない」ルール（2026-07-10）を
 踏まえ、`kami-engine-sdk`のwasm export（VRMキャラビューア専用で今回の
 用途には不適）や`kami-app-animeka-timeline`型の新規Rust crateパターンは
